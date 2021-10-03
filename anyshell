@@ -112,6 +112,10 @@ elif [ "$1" == "server" ]; then
 
 elif [ "$1" == "update" ]; then
     update
+    
+elif [ "$1" == "anyareyouok" ]; then
+    echo "no"
+
 
 elif [ "$1" == "host" ]; then
     if [ "$2" == "up" ]; then
