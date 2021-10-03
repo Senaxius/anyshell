@@ -68,9 +68,13 @@ elif [ "$1" == "list" ]; then
 elif [ "$1" == "server" ]; then
     while [ 1 == 1 ]; do
         a=$(( $(cat ~/.anyshell/hosts | wc -l) - 1 ))
-        a=$(( $a / 7 ))
+        if [ $a == "6" ]; then
+            a=1
+        else
+            a=$(( $a / 7 ))
+        fi
 
-        for (( i = 0; i <= $(( a - 1 )) ; i++ )); do
+        for (( i = 0; i <= $(( $a - 1 )) ; i++ )); do
             line=$(( i * 8 ))
             line=$(( line + 6 ))
             client_time=$(awk -v var="$line" 'NR==var {print $2}' ~/.anyshell/hosts)
