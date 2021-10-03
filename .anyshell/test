@@ -1,0 +1,25 @@
+#!/bin/bash
+while [ 1 == 1 ]; do
+    a=$(( $(cat ~/.anyshell/hosts | wc -l) - 1 ))
+    a=$(( $a / 7 ))
+
+    for (( i = 0; i <= $(( a - 1 )) ; i++ )); do
+        line=$(( i * 8 ))
+        line=$(( line + 6 ))
+        client_time=$(awk -v var="$line" 'NR==var {print $2}' ~/.anyshell/hosts)
+        client_time=$(echo "$client_time" | awk 'BEGIN{FS=":"; OFS=""} {print $1,$2,$3}')
+        client_time=$(echo "$client_time" | awk 'BEGIN{FS="/"} {print $1}')
+        real_time=$(echo "$(date +%H)$(date +%M)$(date +%S)")
+
+        if [ $(( "$((10#$real_time + 1))" - 10 )) -gt "$((10#$client_time + 1))" ]; then
+            echo "offline"
+            probe=$(awk -v var="$line" 'NR==var {print $0}' ~/.anyshell/hosts)
+            echo $probe
+        elif [ $(( "$((10#$real_time + 1))" - 10 )) -gt "$((10#$client_time + 1))" ]; then$(( "$((10#$real_time + 1))" - 10 )) -gt "$((10#$client_time + 1))" ]
+            echo "online"
+        else
+            echo "online"
+        fi
+    done
+    sleep 2
+done

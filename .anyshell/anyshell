@@ -1,0 +1,149 @@
+#!/bin/bash
+# scp -P 41999 server@noftp.ddns.net:/home/server/.anyshell/hosts ~/.anyshell/hosts >/dev/null
+
+update () {
+    number=$(cat -n ~/.anyshell/hosts | sed -n "/$HOSTNAME/p" | sed 's/[^0-9]//g')  
+    sed -i "$number,$(( $number + 6 )) s/^[ \t]*//" ~/.anyshell/hosts
+    IP_own=$(echo "$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')")
+    sed -i "$(( $number + 2 )) s/^IP-local: .*/IP-local: $IP_own/" ~/.anyshell/hosts
+    IP_own=$(curl -s ifconfig.me | grep -o -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+    sed -i "$(( $number + 3 )) s/^IP-public: .*/IP-public: $IP_own/" ~/.anyshell/hosts
+    time=$(echo "$(date +%T)\/$(date +%d)-$(date +%m)-$(date +%Y)") 
+    sed -i "$(( $number + 5 )) s/^last-online: .*/last-online: $time/" ~/.anyshell/hosts
+
+    scp -P 41999 ~/.anyshell/hosts server@noftp.ddns.net:/home/server/.anyshell/ >/dev/null
+}
+if [ "$1" == "connect" ]; then
+    IP_server=$(nslookup noftp.ddns.net | sed -n 's/Address: //p')
+    IP_own=$(curl -s ifconfig.me | grep -o -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+
+    echo -e "\nWhich Host do you want to connect to?\n"
+    echo -e "$(cat ~/.anyshell/hosts | sed -n '/Hostname/p')\n"
+    amount=$(cat ~/.anyshell/hosts | sed -n 's/Hostname: //p' | wc -l)
+
+    read -p "Choose 1 - ${amount}:" Host_number
+    Host_number=$(( 1 + ((${Host_number} - 1) * 8 )))
+    Port_number=$(( ${Host_number} + 1 ))
+    User_number=$(( ${Host_number} + 4 ))
+    lIP_number=$(( ${Host_number} + 2 ))
+    pIP_number=$(( ${Host_number} + 3 ))
+    Host=$(sed -n "${Host_number} s/Hostname: //p" ~/.anyshell/hosts) 
+    Port=$(sed -n "${Port_number} s/Port: //p" ~/.anyshell/hosts) User=$(sed -n "${User_number} s/User: //p" ~/.anyshell/hosts) 
+    IP_local=$(sed -n "${lIP_number} s/IP-local: //p" ~/.anyshell/hosts) 
+    IP_public=$(sed -n "${pIP_number} s/IP-public: //p" ~/.anyshell/hosts) 
+    echo -e "\nRequesting:"
+    echo "      Host: $Host"
+    echo "      Port: $Port"
+    echo "      User: $User"
+    echo "      public-IP: $IP_public "
+    echo "      local-IP: $IP_local "
+
+    sed -i "$(( $Host_number + 6 )) s/requested: 0/requested: 1/" ~/.anyshell/hosts
+    scp -P 41999 ~/.anyshell/hosts server@noftp.ddns.net:/home/server/.anyshell/ >/dev/null
+    sleep 6
+
+    if [ "$IP_own" == "$IP_public" ]; then
+        echo -e "\nTarget is on same network, connecting localy:"
+        ssh $User@$IP_local 
+    else
+        if [ "$IP_own" == "$IP_server" ]; then
+            echo -e "\n Server is on same network, connecting localy:"
+            ssh -f -N -T -M -S ~/.anyshell/socket server@192.168.178.21 -p 41999 -L 41998:localhost:$Port
+            ssh senaex@localhost -p 41998 
+            ssh -S ~/.anyshell/socket -O exit localhos192.168.178.21 t
+        else
+            ssh senaex@localhost -p 41998 
+            ssh -S ~/.anyshell/socket -O exit localhost
+        fi
+    fi
+
+    sed -i "$(( $Host_number + 6 )) s/requested: 1/requested: 0/" ~/.anyshell/hosts
+    scp -P 41999 ~/.anyshell/hosts server@noftp.ddns.net:/home/server/.anyshell/ >/dev/null
+
+elif [ "$1" == "list" ]; then
+    cat ~/.anyshell/hosts
+
+elif [ "$1" == "server" ]; then
+    update
+
+elif [ "$1" == "host" ]; then
+    if [ "$2" == "up" ]; then
+        echo "Hosting on this Device..."
+        own_port=$(awk "/$HOSTNAME/{f=1} f && /Port:/ {print; exit}" ~/.anyshell/hosts | sed -n 's/Port: //p')
+        sudo systemctl start sshd.service
+        ssh -f -N -T -M -S ~/.anyshell/socket2 -R $own_port:localhost:22 server@noftp.ddns.net -p 41999
+
+        scp -P 41999 ~/.anyshell/hosts server@noftp.ddns.net:/home/server/.anyshell/ >/dev/null
+        echo "done"
+
+    elif [ "$2" == "down" ]; then
+        echo "Stop hosting on this Device..."
+        ssh -S ~/.anyshell/socket2 -O exit noftp.ddns.net 
+        sudo systemctl stop sshd.service
+        echo "done"
+
+    elif [ "$2" == "deamon" ]; then
+        echo "Starting anydesk backround deamon.."
+        while [ 1 == 1 ]; do
+            scp -P 41999 server@noftp.ddns.net:/home/server/.anyshell/hosts ~/.anyshell/deamon/hosts >/dev/null
+            update
+            requested=$(awk "/$HOSTNAME/{f=1} f && /requested:/ {print; exit}" ~/.anyshell/deamon/hosts | sed -n 's/requested: //p' | sed 's/[^0-9]//g')
+            if [ "$requested" == "0" ]; then
+                echo "not requested"
+                if [ -S $HOME/.anyshell/socket2 ]; then
+                    ~/.anyshell/anyshell host down
+                fi
+            else
+                echo "requested"
+                if [ ! -S $HOME/.anyshell/socket2 ]; then
+                    ~/.anyshell/anyshell host up 
+                fi
+            fi
+        done
+
+    elif [ "$2" == "setup" ]; then
+        if [ -f "$HOME/.anyshell/host-setup" ]; then
+            echo "Setup is alread done"
+        else
+            echo "Hostname: $HOSTNAME" > ~/.anyshell/host-setup
+            last_port=$(sed -n "$(( $(wc -l < ~/.anyshell/hosts) - 5)) s/Port: //p" ~/.anyshell/hosts) 
+            last_port=$(( ${last_port} + 1 ))
+            if [ "$last_port" == "1" ]; then
+                echo "Wow, you are the first one!"
+                last_port=42000
+            fi
+            echo "Port: $last_port" >> ~/.anyshell/host-setup
+            echo "IP-local: $(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')" >> ~/.anyshell/host-setup
+            IP_own=$(curl -s ifconfig.me | grep -o -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+            echo "IP-public: $IP_own" >> ~/.anyshell/host-setup
+            echo "User: $USER" >> ~/.anyshell/host-setup
+            time=$(date +%T)/$(date +%d)-$(date +%m)-$(date +%Y) 
+            echo "last-online: $time" >> ~/.anyshell/host-setup
+            echo "requested: 0" >> ~/.anyshell/host-setup
+
+            echo -e "Setup done:\n"
+            cat ~/.anyshell/host-setup
+
+            echo -e "\nsending to server..."
+            if [ "$last_port" == "42000" ]; then
+                echo -e "$(cat ~/.anyshell/host-setup)" >> ~/.anyshell/hosts
+            else
+                echo -e "\n$(cat ~/.anyshell/host-setup)" >> ~/.anyshell/hosts
+            fi
+            scp -P 41999 ~/.anyshell/hosts server@noftp.ddns.net:/home/server/.anyshell/ >/dev/null
+            echo "done"
+        fi
+    fi
+else
+    cat ~/.anyshell/asci.txt
+    echo -e "\nCommands:"
+    echo "      connect"
+    echo "      list"
+    echo "      host"
+    echo "          up"
+    echo "          down"
+    echo "          setup"
+    echo "          deamon"
+    echo "      server"
+    echo "      install"
+fi
