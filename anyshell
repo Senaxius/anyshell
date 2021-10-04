@@ -46,19 +46,47 @@ if [ "$1" == "connect" ]; then
     IP_public=$(echo $IP_public | awk '{gsub(/ /,""); print}')
     IP_local=$(echo $IP_local | awk '{gsub(/ /,""); print}')
     Port=$(echo $Port | awk '{gsub(/ /,""); print}')
-    sleep 5
+    User=$(echo $User | awk '{gsub(/ /,""); print}')
 
     if [[ "$IP_own" == "$IP_public" ]]; then
         echo -e "\nTarget is on same network, connecting localy:"
-        ssh $User@$IP_local 
+        for (( i = 0; i <= 10 ; i++ )); do
+            {
+                ssh $User@$IP_local -q && break 
+            } || { 
+                if [ i == 10 ]; then
+                    echo "No Connection was created, try again"
+                fi
+                sleep 1
+            }
+        done
+
     elif [ "$IP_own" == "$IP_server" ]; then
         echo -e "\n Server is on same network, connecting localy:"
         ssh -f -N -T -M -S ~/.anyshell/socket server@$Server_local_IP -p 41999 -L 41998:localhost:$Port
-        ssh senaex@localhost -p 41998 
+        for (( i = 0; i <= 10 ; i++ )); do
+            {
+                ssh $User@localhost -q -p 41998 && break 
+            } || { 
+                if [ i == 10 ]; then
+                    echo "No Connection was created, try again"
+                fi
+                sleep 1
+            }
+        done
         ssh -S ~/.anyshell/socket -O exit localhost
     else
         ssh -f -N -T -M -S ~/.anyshell/socket server@$Server_dns -p 41999 -L 41998:localhost:$Port
-        ssh senaex@localhost -p 41998 
+        for (( i = 0; i <= 10 ; i++ )); do
+            {
+                ssh $User@localhost -q -p 41998 && break 
+            } || { 
+                if [ i == 10 ]; then
+                    echo "No Connection was created, try again"
+                fi
+                sleep 1
+            }
+        done
         ssh -S ~/.anyshell/socket -O exit localhost
     fi
 
@@ -136,7 +164,7 @@ elif [ "$1" == "host" ]; then
         echo "Starting anydesk backround deamon.."
         while [ 1 == 1 ]; do
             scp -P 41999 server@$Server_dns:/home/server/.anyshell/hosts ~/.anyshell/deamon/hosts >/dev/null
-            update
+            # update
             requested=$(awk "/$HOSTNAME/{f=1} f && /requested:/ {print; exit}" ~/.anyshell/deamon/hosts | sed -n 's/requested: //p' | sed 's/[^0-9]//g')
             if [ "$requested" == "0" ]; then
                 echo "not requested"
@@ -148,7 +176,8 @@ elif [ "$1" == "host" ]; then
                 if [ ! -S $HOME/.anyshell/socket2 ]; then
                     anyshell host up 
                 fi
-            fi
+            fi 
+            sleep 1
         done
 
     elif [ "$2" == "setup" ]; then
