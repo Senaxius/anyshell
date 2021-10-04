@@ -1,3 +1,2 @@
-**/hosts
-**/host-setup
-.anyshell/deamon/hosts
+.anyshell/hosts/**
+.anyshell/status/**
