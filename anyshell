@@ -20,7 +20,7 @@ if [ "$1" == "connect" ]; then
     IP_own=$(curl -s ifconfig.me | grep -o -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 
     echo -e "\nWhich Host do you want to connect to?\n"
-    echo -e "$(cat ~/.anyshell/hosts | sed -n '/Hostname/p')\n"
+    echo -e "$(cat ~/.anyshell/hosts | sed -n '/Hostname: .*/p')\n"
     amount=$(cat ~/.anyshell/hosts | sed -n 's/Hostname: //p' | wc -l)
 
     read -p "Choose 1 - ${amount}:" Host_number
@@ -30,7 +30,8 @@ if [ "$1" == "connect" ]; then
     lIP_number=$(( ${Host_number} + 2 ))
     pIP_number=$(( ${Host_number} + 3 ))
     Host=$(sed -n "${Host_number} s/Hostname: //p" ~/.anyshell/hosts) 
-    Port=$(sed -n "${Port_number} s/Port: //p" ~/.anyshell/hosts) User=$(sed -n "${User_number} s/User: //p" ~/.anyshell/hosts) 
+    Port=$(sed -n "${Port_number} s/Port: //p" ~/.anyshell/hosts) 
+    User=$(sed -n "${User_number} s/User: //p" ~/.anyshell/hosts) 
     IP_local=$(sed -n "${lIP_number} s/IP-local: //p" ~/.anyshell/hosts) 
     IP_public=$(sed -n "${pIP_number} s/IP-public: //p" ~/.anyshell/hosts) 
     echo -e "\nRequesting:"
@@ -42,21 +43,23 @@ if [ "$1" == "connect" ]; then
 
     sed -i "$(( $Host_number + 6 )) s/requested: 0/requested: 1/" ~/.anyshell/hosts
     scp -P 41999 ~/.anyshell/hosts server@$Server_dns:/home/server/.anyshell/ >/dev/null
-    sleep 6
+    IP_public=$(echo $IP_public | awk '{gsub(/ /,""); print}')
+    IP_local=$(echo $IP_local | awk '{gsub(/ /,""); print}')
+    Port=$(echo $Port | awk '{gsub(/ /,""); print}')
+    sleep 5
 
-    if [ "$IP_own" == "$IP_public" ]; then
+    if [[ "$IP_own" == "$IP_public" ]]; then
         echo -e "\nTarget is on same network, connecting localy:"
         ssh $User@$IP_local 
+    elif [ "$IP_own" == "$IP_server" ]; then
+        echo -e "\n Server is on same network, connecting localy:"
+        ssh -f -N -T -M -S ~/.anyshell/socket server@$Server_local_IP -p 41999 -L 41998:localhost:$Port
+        ssh senaex@localhost -p 41998 
+        ssh -S ~/.anyshell/socket -O exit localhost
     else
-        if [ "$IP_own" == "$IP_server" ]; then
-            echo -e "\n Server is on same network, connecting localy:"
-            ssh -f -N -T -M -S ~/.anyshell/socket server@$Server_local_IP -p 41999 -L 41998:localhost:$Port
-            ssh senaex@localhost -p 41998 
-            ssh -S ~/.anyshell/socket -O exit localhost
-        else
-            ssh senaex@localhost -p 41998 
-            ssh -S ~/.anyshell/socket -O exit localhost
-        fi
+        ssh -f -N -T -M -S ~/.anyshell/socket server@$Server_dns -p 41999 -L 41998:localhost:$Port
+        ssh senaex@localhost -p 41998 
+        ssh -S ~/.anyshell/socket -O exit localhost
     fi
 
     sed -i "$(( $Host_number + 6 )) s/requested: 1/requested: 0/" ~/.anyshell/hosts
