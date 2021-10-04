@@ -52,13 +52,13 @@ if [ "$1" == "connect" ]; then
     printf '%-8s %-10s %-10s %-15s %-15s\n' $online $name $user $local_IP $public_IP
 
     dir=(~/.anyshell/hosts/*)
-    Host_name="${dir[0]}"
+    Host_name="${dir[$(( $Host_number - 1 ))]}"
     Host_name=$(basename $Host_name) 
     Host_online=$(sed -n 1p ~/.anyshell/status/$Host_name)
     Host_user=$(sed -n 2p ~/.anyshell/hosts/$Host_name)
     Host_local_IP=$(sed -n 4p ~/.anyshell/hosts/$Host_name)
     Host_public_IP=$(sed -n 5p ~/.anyshell/hosts/$Host_name)
-    printf '%-8s %-10s %-10s %-15s %-15s\n' $online $Host_name $Host_user $Host_local_IP $Host_public_IP
+    printf '%-8s %-10s %-10s %-15s %-15s\n' $Host_online $Host_name $Host_user $Host_local_IP $Host_public_IP
 
     echo -e "\nRequesting..."
     sed -i '6s/.*/1/' ~/.anyshell/hosts/$Host_name
@@ -68,7 +68,7 @@ if [ "$1" == "connect" ]; then
         echo -e "\nTarget is on same network, connecting localy:"
         for (( i = 0; i <= 10 ; i++ )); do
             {
-                ssh $Host_user@$IP_local -q && break 
+                ssh $Host_user@$Host_local_IP -q && break 
             } || { 
                 echo -n "."
                 if [ $i == 10 ]; then
@@ -156,7 +156,7 @@ elif [ "$1" == "update" ]; then
 elif [ "$1" == "host" ]; then
     if [ "$2" == "up" ]; then
         echo "Hosting on this Device..."
-        own_port=$(sed -n 2p ~/.anyshell/hosts/$HOSTNAME)
+        own_port=$(sed -n 3p ~/.anyshell/hosts/$HOSTNAME)
         sudo systemctl start sshd.service
         ssh -f -N -T -M -S ~/.anyshell/socket2 -R $own_port:localhost:22 $Server_user@$Server_dns -p 41999
         echo "done"
