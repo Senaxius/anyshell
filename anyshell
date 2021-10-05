@@ -58,7 +58,7 @@ if [ "$1" == "connect" ]; then
     printf '%-8s %-10s %-10s %-15s %-15s\n' $Host_online $Host_name $Host_user $Host_local_IP $Host_public_IP
 
     echo -e "\nRequesting..."
-    sed -i '6s/.*/1/' ~/.anyshell/hosts/$Host_name
+    sed -i '4s/.*/1/' ~/.anyshell/hosts/$Host_name
     scp -P 41999 ~/.anyshell/hosts/$Host_name $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts/ >/dev/null
 
     if [[ "$Host_public_IP" == "$Client_public_IP" ]]; then
@@ -105,7 +105,7 @@ if [ "$1" == "connect" ]; then
         ssh -S ~/.anyshell/socket -O exit localhost
     fi
 
-    sed -i '6s/.*/0/' ~/.anyshell/hosts/$Host_name
+    sed -i '4s/.*/0/' ~/.anyshell/hosts/$Host_name
     scp -P 41999 ~/.anyshell/hosts/$Host_name $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts/ >/dev/null
 
 elif [ "$1" == "list" ]; then
