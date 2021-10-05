@@ -59,6 +59,8 @@ fi
 echo -e "\n  Any: Now I'm gonna link the executable somewhere in the path, but I won't tell you where hehehehehe"
 
 sudo ln -s $DIR/anyshell /usr/bin
+sudo ln -s ~/.anyshell/anyshell-deamon.service /etc/systemd/system/
+sudo ln -s ~/.anyshell/anyshell-server.service /etc/systemd/system/
 
 echo "  Any: done!"
 
