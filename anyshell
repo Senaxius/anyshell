@@ -3,14 +3,16 @@ Server_dns=noftp.ddns.net
 Server_local_IP=192.168.178.21
 Server_public_IP=$(nslookup $Server_dns | sed -n 's/Address: //p')
 Server_user=senaex
-if [ -f ~/.anyshell/hosts ]; then
+if [ -d ~/.anyshell/hosts ]; then
     rm -r ~/.anyshell/hosts 
 fi
-if [ -f ~/.anyshell/status ]; then
+if [ -d ~/.anyshell/status ]; then
     rm -r ~/.anyshell/status 
 fi
 scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/status ~/.anyshell/ >/dev/null
 scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts ~/.anyshell/ >/dev/null
+
+systemctl is-enabled sshd.service >/dev/null 2>&1 && Host_sshd=1 || Host_sshd=0
 
 update () {
     sed -i '1s/.*/1/' ~/.anyshell/status/$HOSTNAME
@@ -157,14 +159,18 @@ elif [ "$1" == "host" ]; then
     if [ "$2" == "up" ]; then
         echo "Hosting on this Device..."
         own_port=$(sed -n 3p ~/.anyshell/hosts/$HOSTNAME)
-        sudo systemctl start sshd.service
+        if [ $Host_sshd == "0" ]; then
+            sudo systemctl start sshd.service
+        fi
         ssh -f -N -T -M -S ~/.anyshell/socket2 -R $own_port:localhost:22 $Server_user@$Server_dns -p 41999
         echo "done"
 
     elif [ "$2" == "down" ]; then
         echo "Stop hosting on this Device..."
         ssh -S ~/.anyshell/socket2 -O exit $Server_dns 
-        sudo systemctl stop sshd.service
+        if [ $Host_sshd == "0" ]; then
+            sudo systemctl stop sshd.service
+        fi
         echo "done"
 
     elif [ "$2" == "deamon" ]; then
