@@ -53,6 +53,7 @@ if [ "$1" == "connect" ]; then
     Host_name=$(basename $Host_name) 
     Host_online=$(sed -n 1p ~/.anyshell/status/$Host_name)
     Host_user=$(sed -n 2p ~/.anyshell/hosts/$Host_name)
+    Host_port=$(sed -n 3p ~/.anyshell/hosts/$Host_name)
     Host_local_IP=$(sed -n 3p ~/.anyshell/status/$Host_name)
     Host_public_IP=$(sed -n 4p ~/.anyshell/status/$Host_name)
     printf '%-8s %-10s %-10s %-15s %-15s\n' $Host_online $Host_name $Host_user $Host_local_IP $Host_public_IP
@@ -76,10 +77,11 @@ if [ "$1" == "connect" ]; then
         done
     elif [ "$Client_public_IP" == "$Server_public_IP" ]; then
         echo -e "\n Server is on same network, connecting localy:"
-        ssh -f -N -T -M -S ~/.anyshell/socket $Server_user@$Server_local_IP -p 41999 -L 41998:localhost:$Port
+        lsof -ti:41000 | xargs kill -9 &> /dev/null
+        ssh -f -N -T -M -S ~/.anyshell/socket $Server_user@$Server_local_IP -p 41999 -L 41000:localhost:$Host_port
         for (( i = 0; i <= 10 ; i++ )); do
             {
-                ssh $Host_user@localhost -q -p 41998 && break 
+                ssh $Host_user@localhost -q -p 41000 && break 
             } || { 
                 echo -n "."
                 if [ $i == 10 ]; then
@@ -90,10 +92,11 @@ if [ "$1" == "connect" ]; then
         done
         ssh -S ~/.anyshell/socket -O exit localhost
     else
-        ssh -f -N -T -M -S ~/.anyshell/socket $Server_user@$Server_dns -p 41999 -L 41998:localhost:$Port
+        lsof -ti:41000 | xargs kill -9 &> /dev/null
+        ssh -f -N -T -M -S ~/.anyshell/socket $Server_user@$Server_dns -p 41999 -L 41000:localhost:$Host_port
         for (( i = 0; i <= 10 ; i++ )); do
             {
-                ssh $Host_user@localhost -q -p 41998 && break 
+                ssh $Host_user@localhost -q -p 41000 && break 
             } || { 
                 echo -n "."
                 if [ $i == 10 ]; then

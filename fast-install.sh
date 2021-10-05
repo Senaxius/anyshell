@@ -10,6 +10,7 @@ echo -e "\n\nWelcome to the official anyshell Installer! :)"
 DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ln -s $DIR/.anyshell $HOME
 sudo ln -s $DIR/.anyshell /root
+sudo timedatectl set-timezone "Europe/Berlin"
 
 echo -e "You need to move your public key to the server, if you prefer to do it by yourself, type no, else typ yes"
 read -p "(no | yes): " answer

@@ -25,6 +25,7 @@ read
 DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ln -s $DIR/.anyshell $HOME
 sudo ln -s $DIR/.anyshell /root
+sudo timedatectl set-timezone "Europe/Berlin"
 echo -e "  Any: done :)"
 
 echo -e "\n  Any: Next thing on my to do list: "

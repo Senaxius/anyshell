@@ -9,7 +9,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=senaex
-ExecStart=anyshell host deamon
+ExecStart=/bin/bash /usr/bin/anyshell host deamon
 
 [Install]
 WantedBy=multi-user.target
