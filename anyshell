@@ -28,6 +28,7 @@ if [ "$1" == "connect" ]; then
     if [ -d ~/.anyshell/status ]; then rm -r ~/.anyshell/status; fi
     scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/status ~/.anyshell/ >/dev/null
     scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts ~/.anyshell/ >/dev/null
+    if [[ $EUID == 0 ]]; then chmod a+wrx -R ~/.anyshell/hosts ~/.anyshell/status; fi
     Client_public_IP=$(curl -s ifconfig.me | grep -o -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 
     echo -e "\nWhich Host do you want to connect to?\n"
@@ -114,6 +115,8 @@ elif [ "$1" == "list" ]; then
     if [ -d ~/.anyshell/status ]; then rm -r ~/.anyshell/status; fi
     scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/status ~/.anyshell/ >/dev/null
     scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts ~/.anyshell/ >/dev/null
+    if [[ $EUID == 0 ]]; then chmod a+wrx -R ~/.anyshell/hosts ~/.anyshell/status; fi
+
     online="online:" 
     name="Hostname:" 
     user="User:"
@@ -160,6 +163,7 @@ elif [ "$1" == "host" ]; then
     if [ -d ~/.anyshell/status ]; then rm -r ~/.anyshell/status; fi
     scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/status ~/.anyshell/ >/dev/null
     scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts ~/.anyshell/ >/dev/null
+    if [[ $EUID == 0 ]]; then chmod a+wrx -R ~/.anyshell/hosts ~/.anyshell/status; fi
     if [ "$2" == "up" ]; then
         echo "Hosting on this Device..."
         own_port=$(sed -n 3p ~/.anyshell/hosts/$HOSTNAME)
@@ -181,6 +185,7 @@ elif [ "$1" == "host" ]; then
         echo "Starting anydesk backround deamon.."
         while [ 1 == 1 ]; do
             scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts ~/.anyshell/ >/dev/null
+            if [[ $EUID == 0 ]]; then chmod a+wrx -R ~/.anyshell/hosts ~/.anyshell/status; fi
             update
             requested=$(sed -n 6p ~/.anyshell/hosts/$HOSTNAME)
             if [ "$requested" == "0" ]; then
@@ -202,6 +207,7 @@ elif [ "$1" == "host" ]; then
         if [ -d ~/.anyshell/status ]; then rm -r ~/.anyshell/status; fi
         scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/status ~/.anyshell/ >/dev/null
         scp -P 41999 -r $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts ~/.anyshell/ >/dev/null
+        if [[ $EUID == 0 ]]; then chmod a+wrx -R ~/.anyshell/hosts ~/.anyshell/status; fi
 
         last_port=$(( $(ls ~/.anyshell/hosts | wc -l) + 42000 ))
         echo "$HOSTNAME" > ~/.anyshell/hosts/$HOSTNAME
