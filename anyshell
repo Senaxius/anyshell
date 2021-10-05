@@ -54,7 +54,7 @@ if [ "$1" == "connect" ]; then
     Host_online=$(sed -n 1p ~/.anyshell/status/$Host_name)
     Host_user=$(sed -n 2p ~/.anyshell/hosts/$Host_name)
     Host_local_IP=$(sed -n 3p ~/.anyshell/status/$Host_name)
-    Host_public_Ip=$(sed -n 4p ~/.anyshell/status/$Host_name)
+    Host_public_IP=$(sed -n 4p ~/.anyshell/status/$Host_name)
     printf '%-8s %-10s %-10s %-15s %-15s\n' $Host_online $Host_name $Host_user $Host_local_IP $Host_public_IP
 
     echo -e "\nRequesting..."
@@ -126,7 +126,7 @@ elif [ "$1" == "list" ]; then
         online=$(sed -n 1p ~/.anyshell/status/$name)
         user=$(sed -n 2p $file)
         local_IP=$(sed -n 3p ~/.anyshell/status/$name)
-        public_Ip=$(sed -n 4p ~/.anyshell/status/$name)
+        public_IP=$(sed -n 4p ~/.anyshell/status/$name)
         printf '%-8s %-10s %-10s %-15s %-15s\n' $online $name $user $local_IP $public_IP
     done
 
