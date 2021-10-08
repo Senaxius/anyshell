@@ -1,7 +1,7 @@
 #!/bin/bash
-Server_user=$(sed -n 3p ./.anyshell/config)
-Server_dns=$(sed -n 1p ./.anyshell/config)
-Server_local_IP=$(sed -n 2p ./.anyshell/config)
+Server_user=$(sed -n 3p ~/.anyshell/config)
+Server_dns=$(sed -n 1p ~/.anyshell/config)
+Server_local_IP=$(sed -n 2p ~/.anyshell/config)
 Server_public_IP=$(nslookup $Server_dns | sed -n 's/Address: //p')
 
 systemctl is-enabled sshd.service >/dev/null 2>&1 && Host_sshd=1 || Host_sshd=0
