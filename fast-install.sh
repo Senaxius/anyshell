@@ -1,9 +1,4 @@
 #!/bin/bash
-# Server_user=$(sed -n 5p ./anyshell)
-# Server_user=$(echo $Server_user | sed -n 's/^.*=//p')
-# Server_dns=$(sed -n 2p ./anyshell)
-# Server_dns=$(echo $Server_dns | sed -n 's/^.*=//p')
-
 cat ./.anyshell/asci.txt
 echo -e "\n\nWelcome to the official anyshell Installer! :)\n\n"
 
@@ -32,9 +27,6 @@ fi
 Server_user=$(sed -n 3p ./.anyshell/config)
 Server_dns=$(sed -n 1p ./.anyshell/config)
 
-echo $Server_user
-echo $Server_dns
-
 DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ln -s $DIR/.anyshell $HOME
 sudo ln -s $DIR/.anyshell /root
@@ -59,8 +51,6 @@ else
     echo -e "\n Root-Key found, sending to server...\n"
     sudo ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
 fi
-
-exit 1
 
 sudo ln -s $DIR/anyshell /usr/bin
 sudo ln -s ~/.anyshell/anyshell-deamon.service /etc/systemd/system/
