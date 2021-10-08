@@ -168,11 +168,11 @@ if [ "$1" == "connect" ]; then
                 }
             done
         fi
+        echo -e "\nPress \"ctrl+c\" to exit\n"
+        while true; do
+          :
+        done
     fi
-    echo -e "\nPress \"ctrl+c\" to exit\n"
-    while true; do
-      :
-    done
     sed -i '4s/.*/0/' ~/.anyshell/hosts/$Host_name
     scp -P 41999 -i ~/.ssh/anyshell-key ~/.anyshell/hosts/$Host_name $Server_user@$Server_dns:/home/$Server_user/.anyshell/hosts/ >/dev/null
 
