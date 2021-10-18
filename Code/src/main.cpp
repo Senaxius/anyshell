@@ -23,10 +23,17 @@ int main(int argc, char **argv){
     anyshell_server.database = "anyshell";
 
     conn = mysql_connection_setup(anyshell_server);
-    res = mysql_run(conn, "select * from server;");
+    // res = mysql_run(conn, "INSERT INTO server (`ID`, `User`, `Domain`, `local-IP`, `Port`) VALUES ('0', 'test', 'oha.to', '123', '4124');");
+    // res = mysql_run(conn, "SELECT * FROM server;");
+    // res = mysql_run(conn, "SELECT * FROM server WHERE User = 'lennart';");
+    // res = mysql_run(conn, "SELECT * FROM server WHERE User LIKE 'len%' AND Domain LIKE 'no%';");
+    // res = mysql_run(conn, "SELECT * FROM server WHERE (User LIKE 'sen%') OR (User LIKE 'len%');");
+    res = mysql_run(conn, "SELECT * FROM server WHERE User = 'senaex';");
 
+    cout << row[0] << endl;
     while ((row = mysql_fetch_row(res)) != NULL){
         // the below row[] parametes may change depending on the size of the table and your objective
+        // cout << row[0] << endl;
         std::cout << row[0] << " | " << row[1] << " | " << row[2] << " | " << row[3] << " | " << row[4] << std::endl;
     }
 
