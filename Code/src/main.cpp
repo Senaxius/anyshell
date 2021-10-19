@@ -1,5 +1,6 @@
 #include <mysql/mysql.h>
 #include <iostream>
+#include <string.h>
 
 using namespace std;
 
@@ -20,25 +21,45 @@ int main(int argc, char **argv){
     anyshell_server.server = "192.168.178.21";
     anyshell_server.user = "senaex";
     anyshell_server.password = "Quande-0918";
-    anyshell_server.database = "anyshell";
+    anyshell_server.database = "senaex";
 
-    conn = mysql_connection_setup(anyshell_server);
-    // res = mysql_run(conn, "INSERT INTO server (`ID`, `User`, `Domain`, `local-IP`, `Port`) VALUES ('0', 'test', 'oha.to', '123', '4124');");
-    // res = mysql_run(conn, "SELECT * FROM server;");
+    // conn = mysql_connection_setup(anyshell_server);
+    // res = mysql_run(conn,
+    //     "INSERT INTO hosts (`ID`, `Name`, `User`, `Port`, `publicIP`, `localIP`, `online`, `last-online`, `requested`) "
+    //     "VALUES ('0', 'Arch-PC', 'senaex', '22', '87.98.45.78', '192.168.178.21', '1', '2038-01-19 03:14:07', '0');");
+    // res = mysql_run(conn, "DELETE FROM server WHERE ID='12'");
+    // res = mysql_run(conn, "SELECT * FROM hosts;");
+    // res = mysql_run(conn, "SHOW TABLES");
     // res = mysql_run(conn, "SELECT * FROM server WHERE User = 'lennart';");
     // res = mysql_run(conn, "SELECT * FROM server WHERE User LIKE 'len%' AND Domain LIKE 'no%';");
     // res = mysql_run(conn, "SELECT * FROM server WHERE (User LIKE 'sen%') OR (User LIKE 'len%');");
-    res = mysql_run(conn, "SELECT * FROM server WHERE User = 'senaex';");
+    // res = mysql_run(conn, "SELECT * FROM server WHERE User = 'senaex';");
+    // res = mysql_run(conn, 
+    //     "UPDATE hosts "
+    //     "SET localIP='192.197.178.156'"
+    //     "WHERE ID=1"
+    // );
+    // ID, Name, User, Port, publicIP, localIP, requested, last-online, online 
+    // while ((row = mysql_fetch_row(res)) != NULL){
+    //     // the below row[] parametes may change depending on the size of the table and your objective
+    //     std::cout << row[0] << " | " << row[1] << " | " << row[2] << " | " << row[3] << " | " << row[4] << std::endl;
+    // }
 
-    cout << row[0] << endl;
-    while ((row = mysql_fetch_row(res)) != NULL){
-        // the below row[] parametes may change depending on the size of the table and your objective
-        // cout << row[0] << endl;
-        std::cout << row[0] << " | " << row[1] << " | " << row[2] << " | " << row[3] << " | " << row[4] << std::endl;
+
+    // mysql_free_result(res);
+    // mysql_close(conn);
+
+    if(argc > 1){
+        if (strcmp(argv[1], "list") == 0) {
+            // cout << "Listing all hosts...\n" << endl;
+            conn = mysql_connection_setup(anyshell_server);
+            res = mysql_run(conn, "SELECT * FROM hosts;");
+            printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %s \n", "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "online");
+            while ((row = mysql_fetch_row(res)) != NULL){
+                printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %s \n", row[0], row[1], row[2], row[3], row[4], row[5] ,row[6]);
+            }
+        }
     }
-
-    mysql_free_result(res);
-    mysql_close(conn);
 
     // res = mysql_run(conn, "INSERT INTO `server` (`ID`, `User`, `Domain`, `local-IP`, `Port`) VALUES ('3', 'lennart', 'noftp.ddns.net', '54', '41999');");
     return 0;
