@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Oct 20 22:35:41 2021
+# Make data base, printed on Thu Oct 21 16:03:45 2021
 
 # Variables
 
@@ -21,7 +21,7 @@ GTK_RC_FILES = /etc/gtk/gtkrc:/home/senaex/.gtkrc:/home/senaex/.config/gtkrc
 # environment
 CSF_EXCEPTION_PROMPT = 1
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-c5b2f553-06cb-419a-9a5c-cd395295483c.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-bdf3d339-32b8-4b0f-a1a4-0fba4d1c75c9.sock
 # environment
 CSF_XmlOcafResource = /usr/share/opencascade/resources/XmlOcafResource
 # environment
@@ -69,7 +69,7 @@ VSCODE_LOG_STACK = false
 # environment
 VSCODE_CODE_CACHE_PATH = /home/senaex/.config/Code/CachedData/7f6ab5485bbc008386c4386d08766667e155244e
 # environment
-XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session1
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session2
 # environment
 CSF_ShadersDirectory = /usr/share/opencascade/resources/Shaders
 # environment
@@ -121,7 +121,7 @@ ZSH = /home/senaex/.oh-my-zsh
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 30140
+VSCODE_PID = 1230
 # environment
 XDG_SESSION_TYPE = x11
 # automatic
@@ -133,7 +133,7 @@ FLAGS = -g -Llib/mysql/mysql -Llib/ -lmariadb
 # environment
 DRAWDEFAULT = /usr/share/opencascade/resources/DrawResources/DrawDefault
 # environment
-SESSION_MANAGER = local/Arch-PC:@/tmp/.ICE-unix/672,unix/Arch-PC:/tmp/.ICE-unix/672
+SESSION_MANAGER = local/Arch-PC:@/tmp/.ICE-unix/668,unix/Arch-PC:/tmp/.ICE-unix/668
 # automatic
 *F = $(notdir $*)
 # environment
@@ -157,7 +157,7 @@ MAKECMDGOALS := all
 # environment
 PLATFORMIO_CALLER = vscode
 # environment
-SHLVL = 3
+SHLVL = 0
 # environment
 CSF_TObjDefaults = /usr/share/opencascade/resources/StdResource
 # environment
@@ -195,7 +195,7 @@ KDE_APPLICATIONS_AS_SCOPE = 1
 # environment
 XDG_SEAT = seat0
 # environment
-NO_PROXY = 127.0.0.1,127.0.0.1,127.0.0.1,127.0.0.1
+NO_PROXY = 127.0.0.1
 # environment
 XDG_CURRENT_DESKTOP = KDE
 # environment
@@ -227,7 +227,7 @@ XDG_VTNR = 1
 # makefile
 .DEFAULT_GOAL := all
 # environment
-SYSTEMD_EXEC_PID = 539
+SYSTEMD_EXEC_PID = 574
 # environment
 CSF_TObjMessage = /usr/share/opencascade/resources/TObj
 # environment
@@ -287,11 +287,6 @@ SUFFIXES :=
 # environment
 QT_AUTO_SCREEN_SCALE_FACTOR = 0
 # environment
-VSCODE_CLI = 1
-# environment
-ELECTRON_NO_ATTACH_CONSOLE = 1
- 
-# environment
 CSF_StandardDefaults = /usr/share/opencascade/resources/StdResource
 # environment
 KDE_SESSION_VERSION = 5
@@ -305,12 +300,13 @@ CC = g++
 BUILDDIR = .
 # makefile (from 'Makefile', line 12)
 SOURCES = $(wildcard $(SOURCEDIR)/*.cpp)
+ 
 # environment
 KDE_FULL_SESSION = true
 # environment
 LC_IDENTIFICATION = en_US.UTF-8
 # variable set hash-table stats:
-# Load=149/1024=15%, Rehash=0, Collisions=12/200=6%
+# Load=147/1024=14%, Rehash=0, Collisions=12/198=6%
 
 # Pattern-specific Variable Values
 
@@ -425,6 +421,6 @@ anyshell: src/main.cpp
 # strcache performance: lookups = 40 / hit rate = 42%
 # hash-table stats:
 # Load=23/8192=0%, Rehash=0, Collisions=0/40=0%
-# Finished Make data base on Wed Oct 20 22:35:41 2021
+# Finished Make data base on Thu Oct 21 16:03:45 2021
 
  

@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
+                "${workspaceFolder}/**",
                 "${workspaceFolder}/lib/mysql",
                 "${workspaceFolder}/lib/mysql/server"
             ],
