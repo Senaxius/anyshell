@@ -44,9 +44,7 @@ int main(int argc, char **argv) {
 
             conn = mysql_connection_setup(anyshell_server);
             print_hosts(conn);
-
             unrequest(conn, input);
-
             cout << "\nWhich Host do you want to connect to? ";
             cin >> input;
 
@@ -110,7 +108,7 @@ int main(int argc, char **argv) {
             if (ssh_connect == 1) {
                 if (strcmp(own_IP, publicIP) == 0) {
                     cout << "requested host is on same network, connecting localy..." << endl;
-                    connect(user, hostname, port);
+                    connect(user, localIP, port);
                 } else {
                     cout << "connecting to host via sever..." << endl;
                     system("lsof -ti:41000 | xargs kill -9 &> /dev/null");
