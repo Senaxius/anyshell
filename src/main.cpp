@@ -243,6 +243,29 @@ int main(int argc, char **argv) {
                     }
                     sleep(1);
                 }
+            } else if (strcmp(argv[2], "remove") == 0) {
+                conn = mysql_connection_setup(anyshell_server);
+
+                cout << "Which Port do you want to remove? ";
+                cin >> port;
+                cout << "Removing this device from hosts, port: " << port << endl;
+
+                gethostname(hostname, 20);
+                getlogin_r(user, 20);
+
+                sprintf(sql_query,
+                        "DELETE FROM hosts "
+                        "WHERE `Name`='%s' "
+                        "AND `Port`='%s' "
+                        "AND `User`='%s';",
+                        hostname, port, user);
+
+                res = mysql_run(conn, sql_query);
+
+                mysql_free_result(res);
+                mysql_close(conn);
+
+                cout << "done!" << endl;
             }
 
         } else if (strcmp(argv[1], "server") == 0) {
