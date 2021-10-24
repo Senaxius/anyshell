@@ -1,5 +1,5 @@
 #!/bin/bash
-cat ./.anyshell/asci.txt
+cat ./etc/asci.txt
 echo -e "\n\nWelcome to the official anyshell Uninstaller! :("
 
 sudo rm -r /opt/anyshell
