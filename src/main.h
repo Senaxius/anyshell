@@ -29,7 +29,6 @@ void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port);
 void host_down(int port, char *ssh_host);
 
 int socket_check(const char *socket);
-void check_install();
 int check_ssh_setup();
 void connect(char *user, char *host, char *port);
 

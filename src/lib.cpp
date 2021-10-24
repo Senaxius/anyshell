@@ -1,14 +1,5 @@
 #include "main.h"
 
-void check_install() {
-    file.open("/usr/lib/libmariadb.so");
-    if (file) {
-    } else {
-        cout << "library files dont exist, run install.sh" << endl;
-        exit(0);
-    }
-}
-
 void connect(char *user, char *host, char *port){
     sprintf(command, "/home/ALEX/anyshell/lib/connect.sh %s %s %s", user, host, port);
     system(command);
@@ -66,12 +57,12 @@ void print_hosts(MYSQL *conn) {
     MYSQL_RES *res;
     MYSQL_ROW row;
     res = mysql_run(conn, "SELECT * FROM hosts;");
-    printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
+    printf("%-3s | %-14s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
            "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "last-online", "online");
     while ((row = mysql_fetch_row(res)) != NULL) {
         string time = row[7];
         time.erase(time.size() - 7);
-        printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
+        printf("%-3s | %-14s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
                row[0], row[1], row[2], row[3], row[4], row[5], time.c_str(), row[6]);
     }
     mysql_free_result(res);

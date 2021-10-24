@@ -1,8 +1,6 @@
 #include "main.h"
 
 int main(int argc, char **argv) {
-    check_install();
-
     ifstream file("/opt/anyshell/etc/config.txt");
     string str;
     getline(file, str);
@@ -24,6 +22,7 @@ int main(int argc, char **argv) {
         cout << "   connect" << endl;
         cout << "   host" << endl;
         cout << "       setup" << endl;
+        cout << "       remove" << endl;
         cout << "       daemon" << endl;
         cout << "   server" << endl;
     }
