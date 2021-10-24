@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
                     connect(user, localIP, port);
                 } else {
                     cout << "connecting to host via sever..." << endl;
-                    system("lsof -ti:41000 | xargs kill -9 &> /dev/null");
+                    system("lsof -t -i:41000 && lsof -ti:41000 | xargs kill -9");
                     sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
                     system(command);
 
