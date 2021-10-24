@@ -1,7 +1,7 @@
 #include "main.h"
 
 void connect(char *user, char *host, char *port){
-    sprintf(command, "/home/ALEX/anyshell/lib/connect.sh %s %s %s", user, host, port);
+    sprintf(command, "/opt/anyshell/lib/connect.sh %s %s %s", user, host, port);
     system(command);
 }
 

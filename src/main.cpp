@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
             }
 
             char own_IP[20];
-            get_publicIP(own_IP);
+            // get_publicIP(own_IP);
             int ssh_connect = 1;
             if (argc > 2) {
                 if (strcmp(argv[2], "-n") == 0) {
