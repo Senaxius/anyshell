@@ -9,33 +9,75 @@ void check_install() {
     }
 }
 
+void connect(char *user, char *host, char *port){
+    sprintf(command, "/home/ALEX/anyshell/lib/connect.sh %s %s %s", user, host, port);
+    system(command);
+}
+
+int check_ssh(char *user, char *host, char *port){
+    FILE *fp;
+    char check[5];
+    int temp, b;
+    for (int i=0; i<10; i++){
+        sprintf(command, "ssh -q %s@%s -p %s", user, host, port);
+        fp = popen(command, "r");
+        while (fgets(check, sizeof(check), fp) != NULL) {}
+        for (int i = 0; i < 5; ++i) {
+            if (isdigit(check[i])) {
+                temp = (int)check[i] - 48;
+                if (temp == 1){
+                    b = 1;
+                    break;
+                } else if (temp == 0){
+                    b = 0;
+                    break;
+                }
+            }
+        }
+        cout << i << endl;
+        if (b == 1){
+            break;
+        }
+        usleep(500000);
+    }
+    pclose(fp);
+    return temp;
+}
+
+int check_ssh_setup(){
+    FILE *fp;
+    char check[10];
+    int temp;
+    fp = popen(
+        R"(systemctl is-enabled sshd.service >/dev/null 2>&1 && echo 1 || echo 0)",
+        "r");
+    while (fgets(check, sizeof(check), fp) != NULL) {
+    }
+    pclose(fp);
+    for (int i = 0; i < 10; ++i) {
+        if (isdigit(check[i])) {
+            temp = (int)check[i] - 48;
+        }
+    }
+    return temp;
+}
+
 void print_hosts(MYSQL *conn) {
-    // MYSQL_RES *res;
-    // MYSQL_ROW row;
-    // res = mysql_run(conn, "SELECT * FROM hosts;");
-    // printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
-    //        "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "last-online", "online");
-    // while ((row = mysql_fetch_row(res)) != NULL) {
-    //     string time = row[7];
-    //     time.erase(time.size() - 7);
-    //     printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
-    //            row[0], row[1], row[2], row[3], row[4], row[5], time.c_str(), row[6]);
-    // }
     MYSQL_RES *res;
     MYSQL_ROW row;
     res = mysql_run(conn, "SELECT * FROM hosts;");
-    printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-5s | %s \n",
-           "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "req", "online");
+    printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
+           "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "last-online", "online");
     while ((row = mysql_fetch_row(res)) != NULL) {
         string time = row[7];
         time.erase(time.size() - 7);
-        printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-5s | %s \n",
-               row[0], row[1], row[2], row[3], row[4], row[5], row[8], row[6]);
+        printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %-19s | %s \n",
+               row[0], row[1], row[2], row[3], row[4], row[5], time.c_str(), row[6]);
     }
     mysql_free_result(res);
 }
 
-void request(MYSQL *conn, int ID){
+void request(MYSQL *conn, int ID) {
     MYSQL_RES *res;
     sprintf(sql_query,
             "UPDATE hosts "
@@ -45,7 +87,7 @@ void request(MYSQL *conn, int ID){
             ID);
     res = mysql_run(conn, sql_query);
 }
-void unrequest(MYSQL *conn, int ID){
+void unrequest(MYSQL *conn, int ID) {
     MYSQL_RES *res;
     sprintf(sql_query,
             "UPDATE hosts "
@@ -56,7 +98,7 @@ void unrequest(MYSQL *conn, int ID){
     res = mysql_run(conn, sql_query);
 }
 
-void get_ID(MYSQL *conn, const char* table, char * ID){
+void get_ID(MYSQL *conn, const char *table, char *ID) {
     MYSQL_RES *res;
     MYSQL_ROW row;
 
@@ -73,7 +115,7 @@ void get_ID(MYSQL *conn, const char* table, char * ID){
     }
 }
 
-void sql_update(MYSQL *conn){
+void sql_update(MYSQL *conn) {
     MYSQL_RES *res;
     MYSQL_ROW row;
 
@@ -136,49 +178,65 @@ void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port) {
     MYSQL_RES *res;
     MYSQL_ROW row;
 
-    cout << "Hosting on this device..." << endl;
     conn = mysql_connection_setup(anyshell_server);
+    cout << "Hosting on this device, port: " << port << endl;
 
     gethostname(hostname, 20);
     getlogin_r(user, 20);
+    get_localIP(localIP);
+    get_publicIP(publicIP);
     get_ID(conn, "connections", ID);
-
-    int Server_port = 41999 + atoi(ID);
-
-    sprintf(sql_query,
-            "INSERT INTO connections (`ID`, `Name`, `User`, `Host-Port`, `Server-Port`) "
-            "VALUES ('%s', '%s', '%s', '%i', '%i');",
-            ID, hostname, user, port, Server_port);
-    res = mysql_run(conn, sql_query);
+    sprintf(server_port, "%i", (41999 + atoi(ID)));
 
     sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
-    sprintf(command, "ssh -f -N -T -M -S %s -R %i:localhost:%i %s@%s -p %s -i ~/.ssh/anyshell-key ", socket, Server_port, port, ssh_user, ssh_host, ssh_port);
+    sprintf(command, "ssh -f -N -T -M -S %s -R %s:localhost:%i %s@%s -p %s -i ~/.ssh/anyshell-key ", socket, server_port, port, ssh_user, ssh_host, ssh_port);
     system(command);
+
+    sprintf(sql_query,
+            "INSERT INTO connections (`ID`, `Name`, `User`, `Host-Port`, `Server-Port`, `locale-IP`, `public-IP`) "
+            "VALUES ('%s', '%s', '%s', '%i', '%s', '%s', '%s');",
+            ID, hostname, user, port, server_port, localIP, publicIP);
+
+    res = mysql_run(conn, sql_query);
 
     mysql_free_result(res);
     mysql_close(conn);
+
+    sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
+    sprintf(command, "ssh -f -N -T -M -S %s -R %s:localhost:%i %s@%s -p %s -i ~/.ssh/anyshell-key ", socket, server_port, port, ssh_user, ssh_host, ssh_port);
+    system(command);
+
     cout << "done" << endl;
 }
-void host_down(int port) {
+void host_down(int port, char *ssh_host) {
     MYSQL *conn;
     MYSQL_RES *res;
     MYSQL_ROW row;
-    struct connection_details anyshell_server;
-    anyshell_server.server = "noftp.ddns.net";
-    anyshell_server.user = "senaex";
-    anyshell_server.password = "Quande-0918";
-    anyshell_server.database = "senaex";
 
-    cout << "Stop hosting on this device, Port " << port << endl;
     conn = mysql_connection_setup(anyshell_server);
+
+    cout << "Stop hosting on this device, port: " << port << endl;
 
     gethostname(hostname, 20);
     getlogin_r(user, 20);
 
-    sprintf(sql_query, "DELETE FROM connections WHERE Name='%s' AND Host-Port='%s' AND User='%s';", hostname, port, user);
+    sprintf(sql_query,
+            "DELETE FROM connections "
+            "WHERE `Name`='%s' "
+            "AND `Host-Port`='%i' "
+            "AND `User`='%s';",
+            hostname, port, user);
+
     res = mysql_run(conn, sql_query);
+
     mysql_free_result(res);
     mysql_close(conn);
+
+    sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
+    sprintf(command, "ssh -S %s -O exit %s", socket, ssh_host);
+    system(command);
+
+    cout << "done" << endl;
 }
 int socket_check(const char *input) {
     char y[5];

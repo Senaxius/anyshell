@@ -6,6 +6,8 @@
 #include <string.h>
 #include <fstream>
 #include <unistd.h>
+#include <limits>
+#include <ctime>
 
 #include <fstream>
 #include <iostream>
@@ -24,10 +26,13 @@ void get_localIP(char *output);
 void get_publicIP(char *output);
 
 void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port);
-void host_down(int port);
+void host_down(int port, char *ssh_host);
 
 int socket_check(const char *socket);
 void check_install();
+int check_ssh_setup();
+void connect(char *user, char *host, char *port);
+
 void print_hosts(MYSQL *conn);
 void request(MYSQL *conn, int ID);
 void unrequest(MYSQL *conn, int ID);
@@ -37,10 +42,10 @@ void sql_update(MYSQL *conn);
 static ifstream file;
 static char sql_query[500], command[200], socket[100];
 static char hostname[20], user[20], port[6], localIP[20], publicIP[20], ID[3];
-static char server_domain[30], server_IP[15], server_user[10], server_ssh_port[6];
-
+static char server_domain[30], server_IP[15], server_user[10], server_ssh_port[6], server_port[6];
 
 static int input;
+static int ssh_enabled;
 
 static struct connection_details anyshell_server{
     "noftp.ddns.net",

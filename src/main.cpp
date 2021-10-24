@@ -14,6 +14,8 @@ int main(int argc, char **argv) {
     getline(file, str);
     strcpy(server_ssh_port, str.c_str());
 
+    ssh_enabled = check_ssh_setup();
+
     if (argc > 1) {
         if (strcmp(argv[1], "list") == 0) {
             MYSQL *conn;
@@ -24,6 +26,7 @@ int main(int argc, char **argv) {
             print_hosts(conn);
 
             mysql_close(conn);
+
         } else if (strcmp(argv[1], "connect") == 0) {
             MYSQL *conn;
             MYSQL_RES *res;
@@ -32,15 +35,112 @@ int main(int argc, char **argv) {
             conn = mysql_connection_setup(anyshell_server);
             print_hosts(conn);
 
-            cout << "\nWhich Host do you want to connect to? ";
-            cin >> input;
-            request(conn, input);
-
-            cout << "Press any key...";
-            int o;
-            cin >> o;
             unrequest(conn, input);
 
+            cout << "\nWhich Host do you want to connect to? ";
+            cin >> input;
+
+            request(conn, input);
+
+            sprintf(sql_query, "SELECT * FROM hosts WHERE `ID`=%i", input);
+            res = mysql_run(conn, sql_query);
+            while ((row = mysql_fetch_row(res)) != NULL) {
+                strcpy(hostname, row[1]);
+                strcpy(user, row[2]);
+                strcpy(port, row[3]);
+            }
+            mysql_free_result(res);
+
+            cout << "scanning if host is up: " << flush;
+            int b = 0;
+            time_t start = time(nullptr);
+            int i = 0;
+            while (true) {
+                if (i == 50) {
+                    cout << "." << flush;
+                    i = 0;
+                }
+                i++;
+                time_t now = time(nullptr);
+                sprintf(sql_query, "SELECT * FROM connections WHERE Name='%s' AND User='%s' AND `Host-Port`='%s';",
+                        hostname, user, port);
+                res = mysql_run(conn, sql_query);
+                while ((row = mysql_fetch_row(res)) != NULL) {
+                    strcpy(hostname, row[1]);
+                    strcpy(user, row[2]);
+                    strcpy(port, row[3]);
+                    strcpy(server_port, row[4]);
+                    strcpy(localIP, row[5]);
+                    strcpy(publicIP, row[6]);
+                    cout << "found!\n" << endl;
+                    b = 1;
+                    break;
+                }
+                mysql_free_result(res);
+                if (b == 1) {
+                    break;
+                }
+                if (now - start > 10) {
+                    cout << "\nCould not connect to Host!" << endl;
+                    unrequest(conn, input);
+                    mysql_free_result(res);
+                    exit(1);
+                }
+            }
+
+            char own_IP[20];
+            get_publicIP(own_IP);
+            int ssh_connect = 1;
+            if (argc > 2) {
+                if (strcmp(argv[2], "-n") == 0) {
+                    ssh_connect = 0;
+                }
+            }
+            
+            if (ssh_connect == 1) {
+                if (strcmp(own_IP, publicIP) == 0) {
+                    cout << "requested host is on same network, connecting localy..." << endl;
+                    connect(user, hostname, port);
+                } else {
+                    cout << "connecting to host via sever..." << endl;
+                    system("lsof -ti:41000 | xargs kill -9 &> /dev/null");
+                    sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
+                    system(command);
+
+                    strcpy(port, "41000");
+                    strcpy(hostname, "localhost");
+                    connect(user, hostname, port);
+
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost");
+                    system(command);
+                }
+            }
+            else{
+                if (strcmp(own_IP, publicIP) == 0) {
+                    cout << "requested host is on same network, connecting localy..." << endl;
+                    sprintf(command, "ssh %s@%s -p %s", user, localIP, port);
+                    cout << "\nTo connect, run: \n" << "----------------------------------------------------\n" << command << "\n----------------------------------------------------" << endl;
+                    cout << "\nPress any key to stop..." << endl;
+                    cin.ignore();
+                    cin.ignore();
+                } else {
+                    cout << "connecting to host via sever..." << endl;
+                    system("lsof -ti:41000 | xargs kill -9 &> /dev/null");
+                    sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
+                    system(command);
+
+                    sprintf(command, "ssh %s@localhost -p 41000", user);
+                    cout << "\nTo connect, run: \n" << "----------------------------------------------------\n" << command << "\n----------------------------------------------------" << endl;
+                    cout << "\nPress any key to stop..." << endl;
+                    cin.ignore();
+                    cin.ignore();
+
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost");
+                    system(command);
+                }
+            }
+
+            unrequest(conn, input);
             mysql_close(conn);
 
         } else if (strcmp(argv[1], "host") == 0) {
@@ -96,31 +196,37 @@ int main(int argc, char **argv) {
                 mysql_free_result(res);
                 mysql_close(conn);
 
-            } else if (strcmp(argv[2], "deamon") == 0) {
+            } else if (strcmp(argv[2], "daemon") == 0) {
                 conn = mysql_connection_setup(anyshell_server);
                 gethostname(hostname, 20);
                 while (1) {
                     sql_update(conn);
-
                     sprintf(sql_query, "SELECT * FROM hosts WHERE Name='%s';", hostname);
                     res = mysql_run(conn, sql_query);
                     while ((row = mysql_fetch_row(res)) != NULL) {
-                        int check = socket_check(socket);
                         if (strcmp(row[8], "1") == 0) {
                             //Host up
-                            cout << "requested Port " << row[3] << endl;
                             int port = atoi(row[3]);
+                            cout << "Host up, port: " << port << endl;
                             sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
-                            if (check == 1) {
+                            int check = socket_check(socket);
+                            if (check == 0) {
+                                if (ssh_enabled == 0) {
+                                    system("systemctl start sshd.service");
+                                }
                                 host_up(port, server_user, server_domain, server_ssh_port);
                             }
                         } else if (strcmp(row[8], "0") == 0) {
                             //Host down
-                            cout << "not requested" << endl;
                             int port = atoi(row[3]);
+                            cout << "Host down, port: " << port << endl;
                             sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
-                            if (check == 0) {
-                                // host_up(port);
+                            int check = socket_check(socket);
+                            if (check == 1) {
+                                host_down(port, server_domain);
+                                if (ssh_enabled == 0) {
+                                    system("systemctl stop sshd.service");
+                                }
                             }
                         }
                     }
