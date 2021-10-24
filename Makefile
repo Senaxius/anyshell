@@ -1,7 +1,5 @@
 CC = g++
 FLAGS = -g
-FLAGS += -Llib/mysql/mysql
-FLAGS += -Llib/
 FLAGS += -lmariadb
 MAKEFLAGS += --silent
 

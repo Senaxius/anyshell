@@ -1,3 +1,5 @@
 .anyshell/hosts/**
 .anyshell/status/**
 **/*.log
+**/anyshell
+
