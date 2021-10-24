@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
     check_install();
 
-    ifstream file("/home/ALEX/anyshell/config.txt");
+    ifstream file("/opt/anyshell/etc/config.txt");
     string str;
     getline(file, str);
     strcpy(server_user, str.c_str());
@@ -16,7 +16,18 @@ int main(int argc, char **argv) {
 
     ssh_enabled = check_ssh_setup();
 
-    if (argc > 1) {
+    if (argc < 2){
+        system("cat /opt/anyshell/etc/asci.txt");
+        cout << "\nWelcome to anyshell :) \n" << endl;
+        cout << "Commands:" << endl;
+        cout << "   list" << endl;
+        cout << "   connect" << endl;
+        cout << "   host" << endl;
+        cout << "       setup" << endl;
+        cout << "       daemon" << endl;
+        cout << "   server" << endl;
+    }
+    else if (argc > 1) {
         if (strcmp(argv[1], "list") == 0) {
             MYSQL *conn;
             MYSQL_RES *res;
@@ -232,6 +243,20 @@ int main(int argc, char **argv) {
                     }
                     sleep(1);
                 }
+            }
+
+        } else if (strcmp(argv[1], "server") == 0) {
+            cout << "starting anyshell server..." << endl;
+            MYSQL *conn;
+            MYSQL_RES *res;
+            MYSQL_ROW row;
+            conn = mysql_connection_setup(anyshell_server);
+
+            while (1) {
+                cout << "updating list..." << endl;
+                sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
+                res = mysql_run(conn, sql_query);
+                sleep(1);
             }
         }
     }

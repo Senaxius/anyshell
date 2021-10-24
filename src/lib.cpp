@@ -126,6 +126,7 @@ void sql_update(MYSQL *conn) {
             "UPDATE hosts "
             "SET "
             "`last-online`=CURRENT_TIMESTAMP, "
+            "`online`='1', "
             "`localIP`='%s', "
             "`publicIP`='%s' "
             "WHERE Name='%s';",
@@ -201,10 +202,6 @@ void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port) {
 
     mysql_free_result(res);
     mysql_close(conn);
-
-    sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
-    sprintf(command, "ssh -f -N -T -M -S %s -R %s:localhost:%i %s@%s -p %s -i ~/.ssh/anyshell-key ", socket, server_port, port, ssh_user, ssh_host, ssh_port);
-    system(command);
 
     cout << "done" << endl;
 }
