@@ -2,13 +2,8 @@
 cat ./etc/asci.txt
 echo -e "\n\nWelcome to the official anyshell Installer! :)\n\n"
 
-if uname -r | grep -q 'arch'; then
-    echo "you are on arch, installing dependencies..."
-    sudo pacman -S mariadb-libs --needed 2>/dev/null
-else
-    echo "you are on debian, installing dependencies..."
-    sudo apt install libmariadb-dev 2>/dev/null
-fi
+sudo pacman -S mariadb-libs make g++ --needed 2>/dev/null
+sudo apt install libmariadb-dev make g++ 2>/dev/null
 
 echo -e "\n"
 if [ -f ./etc/config.txt ]; then

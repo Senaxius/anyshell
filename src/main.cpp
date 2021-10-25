@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
 
     ssh_enabled = check_ssh_setup();
 
+
     if (argc < 2){
         system("cat /opt/anyshell/etc/asci.txt");
         cout << "\nWelcome to anyshell :) \n" << endl;
@@ -56,6 +57,8 @@ int main(int argc, char **argv) {
                 strcpy(hostname, row[1]);
                 strcpy(user, row[2]);
                 strcpy(port, row[3]);
+                strcpy(localIP, row[5]);
+                strcpy(publicIP, row[4]);
             }
             mysql_free_result(res);
 
@@ -70,16 +73,11 @@ int main(int argc, char **argv) {
                 }
                 i++;
                 time_t now = time(nullptr);
-                sprintf(sql_query, "SELECT * FROM connections WHERE Name='%s' AND User='%s' AND `Host-Port`='%s';",
-                        hostname, user, port);
+                sprintf(sql_query, "SELECT * FROM connections WHERE Name='%s' AND `Host-Port`='%s';",
+                        hostname, port);
                 res = mysql_run(conn, sql_query);
                 while ((row = mysql_fetch_row(res)) != NULL) {
-                    strcpy(hostname, row[1]);
-                    strcpy(user, row[2]);
-                    strcpy(port, row[3]);
-                    strcpy(server_port, row[4]);
-                    strcpy(localIP, row[5]);
-                    strcpy(publicIP, row[6]);
+                    strcpy(server_port, row[3]);
                     cout << "found!\n" << endl;
                     b = 1;
                     break;
@@ -97,7 +95,7 @@ int main(int argc, char **argv) {
             }
 
             char own_IP[20];
-            // get_publicIP(own_IP);
+            get_publicIP(own_IP);
             int ssh_connect = 1;
             if (argc > 2) {
                 if (strcmp(argv[2], "-n") == 0) {
@@ -111,7 +109,7 @@ int main(int argc, char **argv) {
                     connect(user, localIP, port);
                 } else {
                     cout << "connecting to host via sever..." << endl;
-                    system("lsof -t -i:41000 && lsof -ti:41000 | xargs kill -9");
+                    system("lsof -t -i:41000 &>/dev/null && lsof -ti:41000 | xargs kill -9");
                     sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
                     system(command);
 
@@ -119,7 +117,7 @@ int main(int argc, char **argv) {
                     strcpy(hostname, "localhost");
                     connect(user, hostname, port);
 
-                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost");
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost &>/dev/null || rm -f /opt/anyshell/etc/guest_socket");
                     system(command);
                 }
             }
@@ -133,7 +131,7 @@ int main(int argc, char **argv) {
                     cin.ignore();
                 } else {
                     cout << "connecting to host via sever..." << endl;
-                    system("lsof -ti:41000 | xargs kill -9 &> /dev/null");
+                    system("lsof -t -i:41000 &>/dev/null && lsof -ti:41000 | xargs kill -9");
                     sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
                     system(command);
 
@@ -143,7 +141,7 @@ int main(int argc, char **argv) {
                     cin.ignore();
                     cin.ignore();
 
-                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost");
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost &>/dev/null || rm -f /opt/anyshell/etc/guest_socket");
                     system(command);
                 }
             }

@@ -1,6 +1,6 @@
 #!/bin/bash
 #ssh $1@$2 -p $3 
-for (( i = 0; i <= 20 ; i++ )); do
+for (( i = 0; i <= 10 ; i++ )); do
     {
         ssh $1@$2 -p $3 -o StrictHostKeyChecking=no -q && break 
     } || { 

@@ -185,9 +185,9 @@ void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port) {
     system(command);
 
     sprintf(sql_query,
-            "INSERT INTO connections (`ID`, `Name`, `User`, `Host-Port`, `Server-Port`, `locale-IP`, `public-IP`) "
-            "VALUES ('%s', '%s', '%s', '%i', '%s', '%s', '%s');",
-            ID, hostname, user, port, server_port, localIP, publicIP);
+            "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`) "
+            "VALUES ('%s', '%s', '%i', '%s');",
+            ID, hostname, port, server_port);
 
     res = mysql_run(conn, sql_query);
 
@@ -211,9 +211,8 @@ void host_down(int port, char *ssh_host) {
     sprintf(sql_query,
             "DELETE FROM connections "
             "WHERE `Name`='%s' "
-            "AND `Host-Port`='%i' "
-            "AND `User`='%s';",
-            hostname, port, user);
+            "AND `Host-Port`='%i';",
+            hostname, port);
 
     res = mysql_run(conn, sql_query);
 
