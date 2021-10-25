@@ -2,7 +2,7 @@
 cat ./etc/asci.txt
 echo -e "\n\nWelcome to the official anyshell Installer! :)\n\n"
 
-sudo pacman -S mariadb-libs make g++ --needed 2>/dev/null
+sudo pacman -S mariadb-libs make --needed 2>/dev/null
 sudo apt install libmariadb-dev make g++ 2>/dev/null
 
 echo -e "\n"
