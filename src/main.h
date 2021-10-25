@@ -25,8 +25,8 @@ MYSQL_RES *mysql_run(MYSQL *connection, const char *sql_query);
 void get_localIP(char *output);
 void get_publicIP(char *output);
 
-void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port);
-void host_down(int port, char *ssh_host);
+void host_up(const char *database, int port, char *ssh_user, char *ssh_host, char *ssh_port);
+void host_down(const char *database, int port, char *ssh_host);
 
 int socket_check(const char *socket);
 int check_ssh_setup();

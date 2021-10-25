@@ -165,11 +165,12 @@ void get_publicIP(char *output) {
     }
 }
 
-void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port) {
+void host_up(const char *database, int port, char *ssh_user, char *ssh_host, char *ssh_port) {
     MYSQL *conn;
     MYSQL_RES *res;
     MYSQL_ROW row;
 
+    anyshell_server.database = database;
     conn = mysql_connection_setup(anyshell_server);
     cout << "Hosting on this device, port: " << port << endl;
 
@@ -196,11 +197,12 @@ void host_up(int port, char *ssh_user, char *ssh_host, char *ssh_port) {
 
     cout << "done" << endl;
 }
-void host_down(int port, char *ssh_host) {
+void host_down(const char *database, int port, char *ssh_host) {
     MYSQL *conn;
     MYSQL_RES *res;
     MYSQL_ROW row;
 
+    anyshell_server.database = database;
     conn = mysql_connection_setup(anyshell_server);
 
     cout << "Stop hosting on this device, port: " << port << endl;
