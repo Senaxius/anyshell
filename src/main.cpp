@@ -271,12 +271,19 @@ int main(int argc, char **argv) {
             MYSQL *conn;
             MYSQL_RES *res;
             MYSQL_ROW row;
-            conn = mysql_connection_setup(anyshell_server);
 
             while (1) {
                 cout << "updating list..." << endl;
+                anyshell_server.database = "senaex";
+                conn = mysql_connection_setup(anyshell_server);
                 sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
                 res = mysql_run(conn, sql_query);
+                mysql_close(conn);
+                anyshell_server.database = "lennart";
+                conn = mysql_connection_setup(anyshell_server);
+                sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
+                res = mysql_run(conn, sql_query);
+                mysql_close(conn);
                 sleep(1);
             }
         }
