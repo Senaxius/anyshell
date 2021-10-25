@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
                     strcpy(hostname, "localhost");
                     connect(user, hostname, port);
 
-                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost &>/dev/null || rm -f /opt/anyshell/etc/guest_socket");
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost >/dev/null || rm -f /opt/anyshell/etc/guest_socket");
                     system(command);
                 }
             }
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
                     cin.ignore();
                     cin.ignore();
 
-                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost &>/dev/null || rm -f /opt/anyshell/etc/guest_socket");
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost >/dev/null || rm -f /opt/anyshell/etc/guest_socket");
                     system(command);
                 }
             }
