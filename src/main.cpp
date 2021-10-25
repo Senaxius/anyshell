@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
                     connect(user, localIP, port);
                 } else {
                     cout << "connecting to host via sever..." << endl;
-                    system("lsof -t -i:41000 &>/dev/null && lsof -ti:41000 | xargs kill -9");
+                    system("lsof -t -i:41000 >/dev/null && lsof -ti:41000 | xargs kill -9");
                     sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
                     system(command);
 
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
                     cin.ignore();
                 } else {
                     cout << "connecting to host via sever..." << endl;
-                    system("lsof -t -i:41000 &>/dev/null && lsof -ti:41000 | xargs kill -9");
+                    system("lsof -t -i:41000 >/dev/null && lsof -ti:41000 | xargs kill -9");
                     sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket %s@%s -p %s -i ~/.ssh/anyshell-key -L 41000:localhost:%s", server_user, server_domain, server_ssh_port, server_port);
                     system(command);
 
@@ -193,10 +193,10 @@ int main(int argc, char **argv) {
                         "Port='%s';",
                         user, hostname, port);
                 res = mysql_run(conn, sql_query);
-                printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %s \n",
+                printf("%-3s | %-14s | %-8s | %-5s | %-15s | %-15s | %s \n",
                        "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "online");
                 while ((row = mysql_fetch_row(res)) != NULL) {
-                    printf("%-3s | %-10s | %-8s | %-4s | %-15s | %-15s | %s \n",
+                    printf("%-3s | %-14s | %-8s | %-5s | %-15s | %-15s | %s \n",
                            row[0], row[1], row[2], row[3], row[4], row[5], row[6]);
                 }
                 mysql_free_result(res);

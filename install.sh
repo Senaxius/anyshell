@@ -2,8 +2,10 @@
 cat ./etc/asci.txt
 echo -e "\n\nWelcome to the official anyshell Installer! :)\n\n"
 
-sudo pacman -S mariadb-libs make --needed 2>/dev/null
-sudo apt install libmariadb-dev make g++ 2>/dev/null
+echo -e "\nInstalling dependencies..."
+sudo pacman -S mariadb-libs make --needed 
+sudo apt install libmariadb-dev make g++ 
+echo "---------------------------done!------------------------------"
 
 echo -e "\n"
 if [ -f ./etc/config.txt ]; then
