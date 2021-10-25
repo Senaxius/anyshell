@@ -26,10 +26,12 @@ if [ "$config" == "1" ]; then
     read -p "Server domain: " domain
     read -p "Server local-IP: " local_IP
     read -p "Server Port: " port
+    read -p "Database: " data
     echo "$User" > ./etc/config.txt
     echo "$domain" >> ./etc/config.txt
     echo "$local_IP" >> ./etc/config.txt
     echo "$port" >> ./etc/config.txt
+    echo "$data" >> ./etc/config.txt
 fi
 
 ##############Setup#################

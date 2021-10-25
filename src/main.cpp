@@ -11,9 +11,12 @@ int main(int argc, char **argv) {
     strcpy(server_IP, str.c_str());
     getline(file, str);
     strcpy(server_ssh_port, str.c_str());
+    getline(file, str);
+    strcpy(server_database, str.c_str());
 
     ssh_enabled = check_ssh_setup();
 
+    anyshell_server.database = server_database;
 
     if (argc < 2){
         system("cat /opt/anyshell/etc/asci.txt");

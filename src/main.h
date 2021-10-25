@@ -41,7 +41,7 @@ void sql_update(MYSQL *conn);
 static ifstream file;
 static char sql_query[500], command[200], socket[100];
 static char hostname[20], user[20], port[6], localIP[20], publicIP[20], ID[3];
-static char server_domain[30], server_IP[15], server_user[10], server_ssh_port[6], server_port[6];
+static char server_domain[30], server_IP[15], server_user[10], server_ssh_port[6], server_port[6], server_database[20];
 
 static int input;
 static int ssh_enabled;
