@@ -72,5 +72,5 @@ fi
 echo "---------------------------done!------------------------------"
 
 echo "compiling the row anyshell c++ code"
-make clean && make 
+make -C $DIR clean && make -j8 -C $DIR
 echo "---------------------------done!------------------------------"
