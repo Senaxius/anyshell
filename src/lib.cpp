@@ -56,7 +56,7 @@ int check_ssh_setup(){
 void print_hosts(MYSQL *conn) {
     MYSQL_RES *res;
     MYSQL_ROW row;
-    res = mysql_run(conn, "SELECT * FROM hosts;");
+    res = mysql_run(conn, "SELECT * FROM hosts ORDER BY `ID` ASC;");
     printf("%-3s | %-14s | %-8s | %-5s | %-15s | %-15s | %-19s | %s \n",
            "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "last-online", "online");
     while ((row = mysql_fetch_row(res)) != NULL) {
