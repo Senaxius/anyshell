@@ -286,6 +286,10 @@ int main(int argc, char **argv) {
                 mysql_close(conn);
                 sleep(1);
             }
+        } else if (strcmp(argv[1], "reload") == 0) {
+            system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
+            system("sudo systemctl restart anyshell-daemon.service");
+            system("sudo systemctl restart anyshell-server.service");
         }
     }
     return 0;
