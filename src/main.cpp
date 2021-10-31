@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
                                 if (ssh_enabled == 0) {
                                     system("systemctl start sshd.service");
                                 }
-                                host_up(port, server_user, server_domain, server_ssh_port);
+                                host_up(anyshell_server.database, port, server_user, server_domain, server_ssh_port);
                             }
                         } else if (strcmp(row[8], "0") == 0) {
                             //Host down
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
                             sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
                             int check = socket_check(socket);
                             if (check == 1) {
-                                host_down(port, server_domain);
+                                host_down(anyshell_server.database, port, server_domain);
                                 if (ssh_enabled == 0) {
                                     system("systemctl stop sshd.service");
                                 }
