@@ -248,7 +248,7 @@ MYSQL *mysql_connection_setup(struct connection_details mysql_details) {
     // connect database
     if (!mysql_real_connect(connection, mysql_details.server,
                             mysql_details.user, mysql_details.password,
-                            mysql_details.database, 0, NULL, 0)) {
+                            mysql_details.database, 41998, NULL, 0)) {
         std::cout << "Connection Error: " << mysql_error(connection)
                   << std::endl;
         exit(1);
