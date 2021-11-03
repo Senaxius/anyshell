@@ -2,4 +2,5 @@
 .anyshell/status/**
 **/*.log
 **/anyshell
+!*/.backup/anyshell
 
