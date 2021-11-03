@@ -72,5 +72,5 @@ fi
 echo "---------------------------done!------------------------------"
 
 echo "compiling the row anyshell c++ code"
-make -C $DIR clean && make -j8 -C $DIR
+make -C $DIR clean && make -j8 -C $DIR &>/dev/null || echo "could not compile anyshell, using already compiled version..." && cp /opt/anyshell/.backup/anyshell $DIR && anyshell
 echo "---------------------------done!------------------------------"
