@@ -162,6 +162,11 @@ int main(int argc, char **argv) {
                 cin >> port;
                 gethostname(hostname, 20);
                 getlogin_r(user, 20);
+                if (strcmp(user, "") == 0){
+                    cout << user << endl;
+                    strcpy(user, "root");
+                    cout << user << endl;
+                }
                 get_localIP(localIP);
                 get_publicIP(publicIP);
 
