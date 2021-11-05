@@ -161,16 +161,13 @@ int main(int argc, char **argv) {
                 cout << "Which Port do you want to share? ";
                 cin >> port;
                 gethostname(hostname, 20);
-<<<<<<< HEAD
                 get_user(user);
-=======
                 getlogin_r(user, 20);
                 if (strcmp(user, "") == 0){
                     cout << user << endl;
                     strcpy(user, "root");
                     cout << user << endl;
                 }
->>>>>>> ffaac4b0d56f04b2716020fcc9a6671213f81aac
                 get_localIP(localIP);
                 get_publicIP(publicIP);
 
@@ -258,7 +255,7 @@ int main(int argc, char **argv) {
                 cout << "Removing this device from hosts, port: " << port << endl;
 
                 gethostname(hostname, 20);
-                getlogin_r(user, 20);
+                get_user(user);
 
                 sprintf(sql_query,
                         "DELETE FROM hosts "
