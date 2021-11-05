@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
                 cout << "Which Port do you want to share? ";
                 cin >> port;
                 gethostname(hostname, 20);
-                getlogin_r(user, 20);
+                get_user(user);
                 get_localIP(localIP);
                 get_publicIP(publicIP);
 

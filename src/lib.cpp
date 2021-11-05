@@ -1,10 +1,30 @@
 #include "main.h"
 
+std::string exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
 void connect(char *user, char *host, char *port){
     sprintf(command, "/opt/anyshell/lib/connect.sh %s %s %s", user, host, port);
     system(command);
 }
 
+void get_user(char *user){
+    string temp;
+    temp = exec("whoami");
+    temp.erase(remove(temp.begin(), temp.end(), ' '), temp.end());
+    temp.erase(remove(temp.begin(), temp.end(), '\n'), temp.end());
+    strcpy(user, temp.c_str());
+}
 int check_ssh(char *user, char *host, char *port){
     FILE *fp;
     char check[5];

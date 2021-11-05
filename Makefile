@@ -1,5 +1,6 @@
 CC = g++
 FLAGS = -g
+FLAGS += -Wl,--no-as-needed
 FLAGS += -lmariadb
 MAKEFLAGS += --silent
 

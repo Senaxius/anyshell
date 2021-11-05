@@ -8,9 +8,13 @@
 #include <unistd.h>
 #include <limits>
 #include <ctime>
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
 
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,6 +25,8 @@ struct connection_details {
 
 MYSQL *mysql_connection_setup(struct connection_details mysql_details);
 MYSQL_RES *mysql_run(MYSQL *connection, const char *sql_query);
+
+std::string exec(const char* cmd);
 
 void get_localIP(char *output);
 void get_publicIP(char *output);
@@ -36,6 +42,8 @@ void print_hosts(MYSQL *conn);
 void request(MYSQL *conn, int ID);
 void unrequest(MYSQL *conn, int ID);
 void get_ID(MYSQL *conn, const char* table, char * ID);
+void get_user(char *user);
+
 void sql_update(MYSQL *conn);
 /****************************Variables****************************/
 static ifstream file;
