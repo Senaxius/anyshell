@@ -21,16 +21,17 @@ int main(int argc, char **argv) {
 
     list<string> databases;
     ifstream data("/opt/anyshell/etc/databases.txt");
-    while (data.is_open()){
-        while(getline(data, str)){ //read data from file object and put it into string.
-                databases.push_back(str);
-            }
+    while (data.is_open()) {
+        while (getline(data, str)) {  //read data from file object and put it into string.
+            databases.push_back(str);
+        }
         data.close();
     }
 
-    if (argc < 2){
+    if (argc < 2) {
         system("cat /opt/anyshell/etc/asci.txt");
-        cout << "\nWelcome to anyshell :) \n" << endl;
+        cout << "\nWelcome to anyshell :) \n"
+             << endl;
         cout << "Commands:" << endl;
         cout << "   list" << endl;
         cout << "   connect" << endl;
@@ -39,8 +40,7 @@ int main(int argc, char **argv) {
         cout << "       remove" << endl;
         cout << "       daemon" << endl;
         cout << "   server" << endl;
-    }
-    else if (argc > 1) {
+    } else if (argc > 1) {
         if (strcmp(argv[1], "list") == 0) {
             MYSQL *conn;
             MYSQL_RES *res;
@@ -91,7 +91,8 @@ int main(int argc, char **argv) {
                 res = mysql_run(conn, sql_query);
                 while ((row = mysql_fetch_row(res)) != NULL) {
                     strcpy(server_port, row[3]);
-                    cout << "found!\n" << endl;
+                    cout << "found!\n"
+                         << endl;
                     b = 1;
                     break;
                 }
@@ -115,7 +116,7 @@ int main(int argc, char **argv) {
                     ssh_connect = 0;
                 }
             }
-            
+
             if (ssh_connect == 1) {
                 if (strcmp(own_IP, publicIP) == 0) {
                     cout << "requested host is on same network, connecting localy..." << endl;
@@ -133,12 +134,13 @@ int main(int argc, char **argv) {
                     sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket -O exit localhost >/dev/null || rm -f /opt/anyshell/etc/guest_socket");
                     system(command);
                 }
-            }
-            else{
+            } else {
                 if (strcmp(own_IP, publicIP) == 0) {
                     cout << "requested host is on same network, connecting localy..." << endl;
                     sprintf(command, "ssh %s@%s -p %s", user, localIP, port);
-                    cout << "\nTo connect, run: \n" << "----------------------------------------------------\n" << command << "\n----------------------------------------------------" << endl;
+                    cout << "\nTo connect, run: \n"
+                         << "----------------------------------------------------\n"
+                         << command << "\n----------------------------------------------------" << endl;
                     cout << "\nPress any key to stop..." << endl;
                     cin.ignore();
                     cin.ignore();
@@ -149,7 +151,9 @@ int main(int argc, char **argv) {
                     system(command);
 
                     sprintf(command, "ssh %s@localhost -p 41000", user);
-                    cout << "\nTo connect, run: \n" << "----------------------------------------------------\n" << command << "\n----------------------------------------------------" << endl;
+                    cout << "\nTo connect, run: \n"
+                         << "----------------------------------------------------\n"
+                         << command << "\n----------------------------------------------------" << endl;
                     cout << "\nPress any key to stop..." << endl;
                     cin.ignore();
                     cin.ignore();
@@ -173,7 +177,7 @@ int main(int argc, char **argv) {
                 gethostname(hostname, 20);
                 get_user(user);
                 getlogin_r(user, 20);
-                if (strcmp(user, "") == 0){
+                if (strcmp(user, "") == 0) {
                     cout << user << endl;
                     strcpy(user, "root");
                     cout << user << endl;
@@ -223,7 +227,7 @@ int main(int argc, char **argv) {
 
             } else if (strcmp(argv[2], "daemon") == 0) {
                 while (1) {
-                    for (auto const &database: databases) {
+                    for (auto const &database : databases) {
                         anyshell_server.database = database.c_str();
                         cout << anyshell_server.database << endl;
                         conn = mysql_connection_setup(anyshell_server);
@@ -261,7 +265,7 @@ int main(int argc, char **argv) {
                     }
                     sleep(1);
                 }
-                
+
             } else if (strcmp(argv[2], "remove") == 0) {
                 conn = mysql_connection_setup(anyshell_server);
 
@@ -292,19 +296,15 @@ int main(int argc, char **argv) {
             MYSQL *conn;
             MYSQL_RES *res;
             MYSQL_ROW row;
-
             while (1) {
-                cout << "updating list..." << endl;
-                anyshell_server.database = "senaex";
-                conn = mysql_connection_setup(anyshell_server);
-                sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
-                res = mysql_run(conn, sql_query);
-                mysql_close(conn);
-                anyshell_server.database = "lennart";
-                conn = mysql_connection_setup(anyshell_server);
-                sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
-                res = mysql_run(conn, sql_query);
-                mysql_close(conn);
+                for (auto const &database : databases) {
+                    cout << "updating list..." << endl;
+                    anyshell_server.database = database.c_str();
+                    conn = mysql_connection_setup(anyshell_server);
+                    sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
+                    res = mysql_run(conn, sql_query);
+                    mysql_close(conn);
+                }
                 sleep(1);
             }
         } else if (strcmp(argv[1], "reload") == 0) {

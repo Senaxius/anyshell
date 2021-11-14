@@ -2,4 +2,4 @@ senaex
 noftp.ddns.net
 192.168.178.21
 41999
-lennart
+senaex
