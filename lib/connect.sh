@@ -2,7 +2,7 @@
 #ssh $1@$2 -p $3 
 for (( i = 0; i <= 10 ; i++ )); do
     {
-        ssh $1@$2 -p $3 -o StrictHostKeyChecking=accept-new && break 
+        ssh $1@$2 -p $3 -o StrictHostKeyChecking=no && break 
     } || { 
         echo -n "."
         if [ $i == 10 ]; then

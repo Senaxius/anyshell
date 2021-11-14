@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <memory>
 #include <stdexcept>
+#include <list>
 
 #include <fstream>
 #include <iostream>

@@ -13,10 +13,20 @@ int main(int argc, char **argv) {
     strcpy(server_ssh_port, str.c_str());
     getline(file, str);
     strcpy(server_database, str.c_str());
+    file.close();
 
     ssh_enabled = check_ssh_setup();
 
     anyshell_server.database = server_database;
+
+    list<string> databases;
+    ifstream data("/opt/anyshell/etc/databases.txt");
+    while (data.is_open()){
+        while(getline(data, str)){ //read data from file object and put it into string.
+                databases.push_back(str);
+            }
+        data.close();
+    }
 
     if (argc < 2){
         system("cat /opt/anyshell/etc/asci.txt");
@@ -212,41 +222,46 @@ int main(int argc, char **argv) {
                 mysql_close(conn);
 
             } else if (strcmp(argv[2], "daemon") == 0) {
-                conn = mysql_connection_setup(anyshell_server);
-                gethostname(hostname, 20);
                 while (1) {
-                    sql_update(conn);
-                    sprintf(sql_query, "SELECT * FROM hosts WHERE Name='%s';", hostname);
-                    res = mysql_run(conn, sql_query);
-                    while ((row = mysql_fetch_row(res)) != NULL) {
-                        if (strcmp(row[8], "1") == 0) {
-                            //Host up
-                            int port = atoi(row[3]);
-                            cout << "Host up, port: " << port << endl;
-                            sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
-                            int check = socket_check(socket);
-                            if (check == 0) {
-                                if (ssh_enabled == 0) {
-                                    system("systemctl start sshd.service");
+                    for (auto const &database: databases) {
+                        anyshell_server.database = database.c_str();
+                        cout << anyshell_server.database << endl;
+                        conn = mysql_connection_setup(anyshell_server);
+                        gethostname(hostname, 20);
+                        sql_update(conn);
+                        sprintf(sql_query, "SELECT * FROM hosts WHERE Name='%s';", hostname);
+                        res = mysql_run(conn, sql_query);
+                        while ((row = mysql_fetch_row(res)) != NULL) {
+                            if (strcmp(row[8], "1") == 0) {
+                                //Host up
+                                int port = atoi(row[3]);
+                                cout << "Host up, port: " << port << endl;
+                                sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
+                                int check = socket_check(socket);
+                                if (check == 0) {
+                                    if (ssh_enabled == 0) {
+                                        system("systemctl start sshd.service");
+                                    }
+                                    host_up(anyshell_server.database, port, server_user, server_domain, server_ssh_port);
                                 }
-                                host_up(anyshell_server.database, port, server_user, server_domain, server_ssh_port);
-                            }
-                        } else if (strcmp(row[8], "0") == 0) {
-                            //Host down
-                            int port = atoi(row[3]);
-                            cout << "Host down, port: " << port << endl;
-                            sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
-                            int check = socket_check(socket);
-                            if (check == 1) {
-                                host_down(anyshell_server.database, port, server_domain);
-                                if (ssh_enabled == 0) {
-                                    system("systemctl stop sshd.service");
+                            } else if (strcmp(row[8], "0") == 0) {
+                                //Host down
+                                int port = atoi(row[3]);
+                                cout << "Host down, port: " << port << endl;
+                                sprintf(socket, "/opt/anyshell/etc/host_socket_%i", port);
+                                int check = socket_check(socket);
+                                if (check == 1) {
+                                    host_down(anyshell_server.database, port, server_domain);
+                                    if (ssh_enabled == 0) {
+                                        system("systemctl stop sshd.service");
+                                    }
                                 }
                             }
                         }
                     }
                     sleep(1);
                 }
+                
             } else if (strcmp(argv[2], "remove") == 0) {
                 conn = mysql_connection_setup(anyshell_server);
 
@@ -296,6 +311,8 @@ int main(int argc, char **argv) {
             system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
             system("sudo systemctl restart anyshell-daemon.service");
             system("sudo systemctl restart anyshell-server.service");
+        } else if (strcmp(argv[1], "change") == 0) {
+            system("/opt/anyshell/change-database.sh");
         }
     }
     return 0;
