@@ -263,14 +263,14 @@ int main(int argc, char **argv) {
             while (1) {
                 // for each database the server is assigned
                 for (auto const &database : databases) {
-                    cout << "updating list..." << endl;
+                    cout << "updating list on database: " << database << endl;
                     anyshell_server.database = database.c_str();
                     conn = mysql_connection_setup(anyshell_server);
                     // update host online status
                     sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
                     // delete old requests
-                    sprintf(sql_query, "DELETE FROM requests WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
+                    sprintf(sql_query, "DELETE FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
                     mysql_close(conn);
                 }
