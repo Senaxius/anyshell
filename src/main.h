@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <cstdlib>
+#include <thread>
 
 #include "../lib/mysql/mysql.h"
 

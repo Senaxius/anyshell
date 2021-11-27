@@ -59,15 +59,17 @@ void request(MYSQL *conn, int host_ID, host_details *host_details){
     res = mysql_run(conn, sql_query);
 }
 void request_update(MYSQL *conn, host_details *host_details){
-    sprintf(sql_query,
-            "UPDATE requests "
-            "SET "
-            "`last-used`=CURRENT_TIMESTAMP, "
-            "WHERE ID='%s';",
-            host_details->ID);
-    res = mysql_run(conn, sql_query);
-    mysql_free_result(res);
-
+    while (1){
+        sprintf(sql_query,
+                "UPDATE requests "
+                "SET "
+                "`last-used`=CURRENT_TIMESTAMP "
+                "WHERE ID=%s;",
+                host_details->ID);
+        res = mysql_run(conn, sql_query);
+        mysql_free_result(res);
+        sleep(2);
+    }
 }
 
 void unrequest(MYSQL *conn, host_details *host_details){

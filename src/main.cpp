@@ -35,8 +35,12 @@ int main(int argc, char **argv) {
             cin >> input;
             // requesting host and getting host data
             request(conn, input, &anyshell_host);
-            // waiting for host to accept request
+            // keep request online
+            thread updater(request_update, conn, &anyshell_host);
+            updater.detach();
 
+            while (1){}
+            // waiting for host to accept request
             cout << "scanning if host is up: " << flush;
             time_t start = time(nullptr);
             time_t now;
@@ -68,7 +72,7 @@ int main(int argc, char **argv) {
                 // if host is not found, break after 5 seconds
                 if (now - start > 4) {
                     cout << "\nCould not connect to Host!" << endl;
-                    unrequest(conn, &anyshell_host);
+                    // unrequest(conn, &anyshell_host);
                     exit(0);
                 }
             }
@@ -137,8 +141,7 @@ int main(int argc, char **argv) {
             //     }
             // }
 
-            // // unrequest(conn, input);
-            unrequest(conn, &anyshell_host);
+            // unrequest(conn, &anyshell_host);
             mysql_close(conn);
 
         } else if (strcmp(argv[1], "host") == 0) {
