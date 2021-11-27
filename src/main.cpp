@@ -254,6 +254,62 @@ int main(int argc, char **argv) {
                     sleep(1);
                 }
             }
+/*****************************server****************************/
+        } else if (strcmp(argv[1], "server") == 0) {
+            cout << "starting anyshell server..." << endl;
+            while (1) {
+                // for each database the server is assigned
+                for (auto const &database : databases) {
+                    cout << "updating list..." << endl;
+                    anyshell_server.database = database.c_str();
+                    conn = mysql_connection_setup(anyshell_server);
+                    // update host online status
+                    sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
+                    res = mysql_run(conn, sql_query);
+                    // delete old requests
+                    sprintf(sql_query, "DELETE FROM requests WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
+                    res = mysql_run(conn, sql_query);
+                    mysql_close(conn);
+                }
+                sleep(1);
+            }
+/*****************************reload****************************/
+        } else if (strcmp(argv[1], "upgrade") == 0) {
+            string temp;
+            int server = 0;
+            int daemon = 0;
+            temp = exec("sudo systemctl is-active anyshell-server.service");
+            if (temp == "active"){
+                server = 1;
+            }
+            temp = exec("sudo systemctl is-active anyshell-daemon.service");
+            if (temp == "active"){
+                daemon = 1;
+            }
+
+            if (server == 1){ system("sudo systemctl stop anyshell-server.service");}
+            if (daemon == 1){ system("sudo systemctl stop anyshell-daemon.service");}
+            system("cd /opt/anyshell && git pull");
+            system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
+            if (server == 1){ system("sudo systemctl start anyshell-server.service");}
+            if (daemon == 1){ system("sudo systemctl start anyshell-daemon.service");}
+/*****************************change****************************/
+        } else if (strcmp(argv[1], "change") == 0) {
+            system("/opt/anyshell/change-database.sh");
+/*****************************reset*****************************/
+        } else if (strcmp(argv[1], "reset") == 0) {
+            MYSQL *conn;
+            MYSQL_RES *res;
+            MYSQL_ROW row;
+            for (auto const &database : databases) {
+                cout << "reseting database..." << endl;
+                anyshell_server.database = database.c_str();
+                conn = mysql_connection_setup(anyshell_server);
+                sprintf(sql_query, "UPDATE hosts SET `requested`='0' WHERE 1;");
+                res = mysql_run(conn, sql_query);
+                mysql_close(conn);
+            }
+/*************************nothing found*************************/
         } else {
             cout << "Speek German to me, I can't understand shit :(";
             print_help();
