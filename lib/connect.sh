@@ -2,7 +2,6 @@
 #ssh $1@$2 -p $3 
 for (( i = 0; i <= 10 ; i++ )); do
     {
-        echo "ssh $1@$2 -p $3 -o StrictHostKeyChecking=no && break"
         ssh $1@$2 -p $3 -o StrictHostKeyChecking=no && break 
     } || { 
         echo -n "."

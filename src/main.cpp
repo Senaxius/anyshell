@@ -25,16 +25,24 @@ int main(int argc, char **argv) {
             mysql_close(conn);
 /****************************connect****************************/
     } else if (strcmp(argv[1], "connect") == 0) {
-            conn = mysql_connection_setup(anyshell_server);
-            if (argc > 2) {
-                if (strcmp(argv[2], "-v") == 0) {
-                    print_hosts(conn, 1);
-                } else {
-                    print_hosts(conn, 0);
+            // check for flags
+            int ssh_connect = 1;
+            int force_server = 0;
+            int list_all = 0;
+            for (int i = 2; i < argc; i++) {
+                if (strcmp(argv[i], "-n") == 0) {
+                    ssh_connect = 0;
                 }
-            } else {
-                print_hosts(conn, 0);
+                if (strcmp(argv[i], "-s") == 0) {
+                    force_server = 1;
+                }
+                if (strcmp(argv[i], "-v") == 0) {
+                    list_all = 1;
+                }
             }
+            conn = mysql_connection_setup(anyshell_server);
+            // list hosts
+            print_hosts(conn, list_all);
             // get host ID to connect to
             cout << "\nWhich Host do you want to connect to? ";
             int input;
@@ -53,7 +61,7 @@ int main(int argc, char **argv) {
             int b = 0;
             while (true) {
                 i++;
-                if (i == 60) {
+                if (i == 50) {
                     i = 0;
                     cout << "." << flush;
                 }
@@ -84,17 +92,6 @@ int main(int argc, char **argv) {
                 }
             }
 
-            // check for flags
-            int ssh_connect = 1;
-            int force_server = 0;
-            for (int i = 2; i < argc; i++) {
-                if (strcmp(argv[i], "-n") == 0) {
-                    ssh_connect = 0;
-                }
-                if (strcmp(argv[i], "-s") == 0) {
-                    force_server = 1;
-                }
-            }
             if (strcmp(anyshell_user.publicIP, anyshell_host.publicIP) == 0 && force_server == 0 && ssh_connect == 1) {
                 // connect locally
                 cout << "requested host is on same network, connecting localy..." << endl;
@@ -227,10 +224,12 @@ int main(int argc, char **argv) {
                                 connections.push_back(atoi(row[0]));
                                 // start host thread
                                 thread th(host, atoi(row[0]), atoi(row[3]), &anyshell_user, anyshell_server, &connections, &sshd);
+                                // thread th(host, atoi(row[0]), atoi(row[3]), &anyshell_user, anyshell_server);
                                 th.detach();
                                 hosting_threads.push_back(move(th));
                             }
                         }
+                        mysql_free_result(res);
                         mysql_close(conn);
                     }
                     sleep(1);
@@ -248,9 +247,22 @@ int main(int argc, char **argv) {
                     // update host online status
                     sprintf(sql_query, "UPDATE hosts SET `online`='0' WHERE `last-online` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
+
                     // delete old requests
-                    sprintf(sql_query, "DELETE FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
+                    sprintf(sql_query, "SELECT FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
+                    while ((row = mysql_fetch_row(res)) != NULL) {
+                        cout << "Found unused connection with ID: " << row[0] << ", killing it..." << endl;
+                        MYSQL *conn2;
+                        MYSQL_RES *res2;
+                        MYSQL_ROW row2;
+                        conn2 = mysql_connection_setup(anyshell_server);
+                        sprintf(sql_query, "DELETE FROM requests WHERE `ID`=%s;", row[0]);
+                        res2 = mysql_run(conn2, sql_query);
+                        sprintf(sql_query, "DELETE FROM connections WHERE `ID`=%s;", row[0]);
+                        res2 = mysql_run(conn2, sql_query);
+                        mysql_close(conn2);
+                    }
                     mysql_close(conn);
                 }
                 sleep(1);
@@ -286,19 +298,6 @@ int main(int argc, char **argv) {
 /*****************************change****************************/
         } else if (strcmp(argv[1], "change") == 0) {
             system("/opt/anyshell/change-database.sh");
-/*****************************reset*****************************/
-        } else if (strcmp(argv[1], "reset") == 0) {
-            MYSQL *conn;
-            MYSQL_RES *res;
-            MYSQL_ROW row;
-            for (auto const &database : databases) {
-                cout << "reseting database..." << endl;
-                anyshell_server.database = database.c_str();
-                conn = mysql_connection_setup(anyshell_server);
-                sprintf(sql_query, "UPDATE hosts SET `requested`='0' WHERE 1;");
-                res = mysql_run(conn, sql_query);
-                mysql_close(conn);
-            }
 /*************************nothing found*************************/
         } else {
             cout << "Speek German to me, I can't understand shit :(";

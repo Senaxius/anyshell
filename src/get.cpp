@@ -97,7 +97,7 @@ void print_hosts(MYSQL *conn, int verbose) {
         }
         mysql_free_result(res);
     } else {
-        res = mysql_run(conn, "SELECT * FROM hosts ORDER BY `ID` ASC;");
+        res = mysql_run(conn, "SELECT * FROM hosts WHERE ID < 10 ORDER BY `ID` ASC;");
         printf("%-3s | %-14s | %-8s | %-5s | %s \n",
                "ID", "Hostname", "User", "Port", "online");
         while ((row = mysql_fetch_row(res)) != NULL) {

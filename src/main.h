@@ -39,6 +39,7 @@ struct host_details {
 std::string exec(const char *cmd);
 void setting_ctrl_c();
 void ctrl_c_handler(int s);
+
 void remove_from_list(list<int> *list, int a);
 int check_connection(list<int> *list, int a);
 
@@ -66,6 +67,7 @@ void request_update(server_details server_details, host_details host_details);
 void unrequest(MYSQL *conn, host_details *host_details);
 
 void host(int ID, int port, user_details *user_details, server_details server_details, list<int> *connections, int *sshd);
+// void host(int ID, int port, user_details *user_details, server_details server_details);
 void connect(char *user, char *host, char *port);
 /****************************Variables****************************/
 static string str;

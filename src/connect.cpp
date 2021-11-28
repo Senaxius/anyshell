@@ -83,6 +83,7 @@ void unrequest(MYSQL *conn, host_details *host_details){
 }
 
 void host(int ID, int port, user_details *user_details, server_details server_details, list<int> *connections, int *sshd){
+// void host(int ID, int port, user_details *user_details, server_details server_details){
     conn = mysql_connection_setup(server_details);
     cout << "Hosting Port: " << port << " on ID: " << ID << endl;
     // stoping main loop from stoping sshd service
@@ -117,30 +118,21 @@ void host(int ID, int port, user_details *user_details, server_details server_de
         if ((row = mysql_fetch_row(res)) == NULL) {
             // host is no longer in requests table
             cout << "Stop hosting Port: " << port << " on ID: " << ID << endl;
-            cout << "1" << endl;
             // deleting host from connections table
             sprintf(sql_query,
             "DELETE FROM connections "
             "WHERE `ID`='%i';"
             , ID);
             res = mysql_run(conn, sql_query);
-            cout << "2" << endl;
 
-            mysql_close(conn);
-            cout << "3" << endl;
             // closeing ssh connection
             sprintf(command, "ssh -S %s -O exit %s &>/dev/null", socket, server_details.domain);
             system(command);
-            cout << "4" << endl;
             sprintf(command, "rm -f %s", socket);
             system(command);
-            cout << "5" << endl;
-            int test;
-            test =  check_connection(connections, 3);
 
             // remove the ID from connections list
             remove_from_list(connections, ID);
-            cout << "6" << endl;
             *sshd -= 1;
             break;
         }
