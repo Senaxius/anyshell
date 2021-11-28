@@ -49,6 +49,7 @@ void request(MYSQL *conn, int host_ID, host_details *host_details){
         strcpy(host_details->publicIP, row[4]);
         strcpy(host_details->localIP, row[5]);
     }
+    mysql_free_result(res);
     // get unique request ID
     get_ID(conn, "requests", host_details->ID);
     // request host in requests table
@@ -58,14 +59,15 @@ void request(MYSQL *conn, int host_ID, host_details *host_details){
             host_details->ID, host_details->hostname, host_details->user, host_details->host_port);
     res = mysql_run(conn, sql_query);
 }
-void request_update(MYSQL *conn, host_details *host_details){
+void request_update(server_details server_details, host_details host_details){
+    conn = mysql_connection_setup(server_details);
     while (1){
         sprintf(sql_query,
                 "UPDATE requests "
                 "SET "
                 "`last-used`=CURRENT_TIMESTAMP "
                 "WHERE ID=%s;",
-                host_details->ID);
+                host_details.ID);
         res = mysql_run(conn, sql_query);
         mysql_free_result(res);
         sleep(2);
@@ -78,4 +80,76 @@ void unrequest(MYSQL *conn, host_details *host_details){
             "WHERE ID='%s';",
             host_details->ID);
     res = mysql_run(conn, sql_query);
+}
+
+void host(int ID, int port, user_details *user_details, server_details server_details, list<int> *connections, int *sshd){
+    conn = mysql_connection_setup(server_details);
+    cout << "Hosting Port: " << port << " on ID: " << ID << endl;
+    // stoping main loop from stoping sshd service
+    *sshd += 1;
+    // start sshd.service if not running already
+    if (strcmp(exec("sudo systemctl is-active sshd.service").c_str(), "inactive") == 0) {
+        cout << "start sshd.service" << endl;
+        system("sudo systemctl start sshd.service");
+    }
+
+    int server_port;
+    char temp[6];
+    get_ID(conn, "connections", temp);
+    server_port = (41999 + atoi(temp));
+
+    sprintf(socket, "/opt/anyshell/etc/host_socket_%i", ID);
+    sprintf(command, "ssh -f -N -T -M -S %s -R %i:localhost:%i %s@%s -p %s -i ~/.ssh/anyshell-key ", socket, server_port, port, server_details.user, server_details.domain, server_details.SSH_port);
+    system(command);
+
+    sprintf(sql_query,
+            "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`) "
+            "VALUES ('%i', '%s', '%i', '%i');",
+            ID, user_details->hostname, port, server_port);
+    res = mysql_run(conn, sql_query);
+    mysql_free_result(res);
+    while (1){
+        // check if host is still in requests table
+        sprintf(sql_query,
+                "SELECT * FROM requests WHERE ID='%i';",
+                ID);
+        res = mysql_run(conn, sql_query);
+        if ((row = mysql_fetch_row(res)) == NULL) {
+            // host is no longer in requests table
+            cout << "Stop hosting Port: " << port << " on ID: " << ID << endl;
+            cout << "1" << endl;
+            // deleting host from connections table
+            sprintf(sql_query,
+            "DELETE FROM connections "
+            "WHERE `ID`='%i';"
+            , ID);
+            res = mysql_run(conn, sql_query);
+            cout << "2" << endl;
+
+            mysql_close(conn);
+            cout << "3" << endl;
+            // closeing ssh connection
+            sprintf(command, "ssh -S %s -O exit %s &>/dev/null", socket, server_details.domain);
+            system(command);
+            cout << "4" << endl;
+            sprintf(command, "rm -f %s", socket);
+            system(command);
+            cout << "5" << endl;
+            int test;
+            test =  check_connection(connections, 3);
+
+            // remove the ID from connections list
+            remove_from_list(connections, ID);
+            cout << "6" << endl;
+            *sshd -= 1;
+            break;
+        }
+        mysql_free_result(res);
+        sleep(1);
+    }
+}
+
+void connect(char *user, char *host, char *port){
+    sprintf(command, "/opt/anyshell/lib/connect.sh %s %s %s", user, host, port);
+    system(command);
 }

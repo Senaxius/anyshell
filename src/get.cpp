@@ -138,3 +138,43 @@ void get_ID(MYSQL *conn, const char *table, char *ID) {
         mysql_free_result(res);
     }
 }
+
+void remove_from_list(list<int> *list, int a){
+    for (int i = 0; i < list->size(); i++) {
+        auto it = list->begin();
+        std::advance(it, i);
+        if (*it == a) {
+            list->erase(it);
+            break;
+        }
+    }
+}
+
+int check_connection(list<int> *list, int a){
+    int b = 0;
+    for (int i = 0; i < list->size(); i++) {
+        auto it = list->begin();
+        std::advance(it, i);
+        if (*it == a) {
+            b = 1;
+            break;
+        }
+    }
+    return b;
+}
+
+void ctrl_c_handler(int s) {
+    cout << "\nexiting anyshell..." << endl;
+    // mysql_free_result(res);
+    // unrequest(conn, &anyshell_host);
+    exit(0);
+}
+
+void setting_ctrl_c(){
+    // setting up ctrl_c action
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = ctrl_c_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+}

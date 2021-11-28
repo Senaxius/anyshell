@@ -1,14 +1,18 @@
 #include "main.h"
 
 int main(int argc, char **argv) {
-    get_server_config("/opt/anyshell/etc/config.txt", &anyshell_server);  //get config from config.txt
-    get_user_config(&anyshell_user);                                      //get config from user.txt
-    get_databases(databases);                                             //get databases from databases.txt
+    setting_ctrl_c();
+    // get config from config.txt
+    get_server_config("/opt/anyshell/etc/config.txt", &anyshell_server);
+    // get config from user.txt
+    get_user_config(&anyshell_user);
+    // get databases from databases.txt
+    get_databases(databases);
 
     if (argc == 1) {
         print_help();
     } else {
-/*****************************list******************************/
+        /*****************************list******************************/
         if (strcmp(argv[1], "list") == 0) {
             conn = mysql_connection_setup(anyshell_server);
             if (argc > 2) {
@@ -19,16 +23,13 @@ int main(int argc, char **argv) {
                 print_hosts(conn, 0);
             }
             mysql_close(conn);
-/****************************connect****************************/
+            /****************************connect****************************/
         } else if (strcmp(argv[1], "connect") == 0) {
             conn = mysql_connection_setup(anyshell_server);
             if (argc > 2) {
-                if (strcmp(argv[2], "-v") == 0) {
-                    print_hosts(conn, 1);
-                }
-            } else {
-                print_hosts(conn, 0);
-            }
+                if (strcmp(argv[2], "-v") == 0) { print_hosts(conn, 1); }
+                else { print_hosts(conn, 0); }
+            } else { print_hosts(conn, 0);}
             // get host ID to connect to
             cout << "\nWhich Host do you want to connect to? ";
             int input;
@@ -36,10 +37,9 @@ int main(int argc, char **argv) {
             // requesting host and getting host data
             request(conn, input, &anyshell_host);
             // keep request online
-            thread updater(request_update, conn, &anyshell_host);
+            thread updater(request_update, anyshell_server, anyshell_host);
             updater.detach();
 
-            while (1){}
             // waiting for host to accept request
             cout << "scanning if host is up: " << flush;
             time_t start = time(nullptr);
@@ -48,17 +48,18 @@ int main(int argc, char **argv) {
             int b = 0;
             while (true) {
                 i++;
-                if (i == 60){
+                if (i == 60) {
                     i = 0;
                     cout << "." << flush;
                 }
                 now = time(nullptr);
 
-                //check if host is up
+                // check if host is up
                 sprintf(sql_query, "SELECT * FROM connections WHERE ID='%s';", anyshell_host.ID);
                 res = mysql_run(conn, sql_query);
                 while ((row = mysql_fetch_row(res)) != NULL) {
-                    //host is up
+                    // host is up
+                    strcpy(anyshell_host.server_port, row[3]);
                     cout << "found!\n" << endl;
                     b = 1;
                     break;
@@ -72,24 +73,44 @@ int main(int argc, char **argv) {
                 // if host is not found, break after 5 seconds
                 if (now - start > 4) {
                     cout << "\nCould not connect to Host!" << endl;
-                    // unrequest(conn, &anyshell_host);
+                    unrequest(conn, &anyshell_host);
                     exit(0);
                 }
             }
 
-            // char own_IP[20];
-            // int ssh_connect = 1;
-            // if (argc > 2) {
-            //     if (strcmp(argv[2], "-n") == 0) {
-            //         ssh_connect = 0;
-            //     }
-            //     if (strcmp(argv[2], "-s") == 1) {
-            //         get_publicIP(own_IP);
-            //     }
-            // } else {
-            //     get_publicIP(own_IP);
-            // }
+            // check for flags
+            int ssh_connect = 1;
+            int force_server = 0;
+            for (int i = 2; i < argc; i++) {
+                if (strcmp(argv[i], "-n") == 0) {
+                    ssh_connect = 0;
+                }
+                if (strcmp(argv[i], "-s") == 0) {
+                    force_server = 1;
+                }
+            }
+            if (strcmp(anyshell_user.publicIP, anyshell_host.publicIP) == 0 && force_server == 0) {
+                cout << "requested host is on same network, connecting localy..." << endl;
+            } else {
+                cout << "connecting to host via sever..." << endl;
+                sprintf(command, "lsof -t -i:%s >/dev/null && lsof -ti:%s | xargs kill -9", anyshell_host.server_port, anyshell_host.server_port);
+                system(command);
+                sprintf(command, "rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_host.server_port);
+                system(command);
+                sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket_%s %s@%s -p %s -i ~/.ssh/anyshell-key -L %s:localhost:%s", anyshell_host.server_port, anyshell_server.user, anyshell_server.domain, anyshell_server.SSH_port, anyshell_host.server_port, anyshell_host.server_port);
+                system(command);
+                // while(1){}
+                if (ssh_connect == 1) {
+                    cout << "connection over ssh" << endl;
+                    strcpy(ssh_hostname, "localhost");
+                    connect(anyshell_host.user, ssh_hostname, anyshell_host.server_port);
 
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit %s &>/dev/null", anyshell_host.server_port, anyshell_server.domain);
+                    system(command);
+                    // sprintf(command, "rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_host.server_port);
+                    // system(command);
+                }
+            }
             // if (ssh_connect == 1) {
             //     if (strcmp(own_IP, publicIP) == 0) {
             //         cout << "requested host is on same network, connecting localy..." << endl;
@@ -141,7 +162,7 @@ int main(int argc, char **argv) {
             //     }
             // }
 
-            // unrequest(conn, &anyshell_host);
+            unrequest(conn, &anyshell_host);
             mysql_close(conn);
 
         } else if (strcmp(argv[1], "host") == 0) {
@@ -215,49 +236,40 @@ int main(int argc, char **argv) {
                 cout << "done!" << endl;
                 /**************************host-daemon**************************/
             } else if (strcmp(argv[2], "daemon") == 0) {
+                vector<thread> hosting_threads;
+                int sshd = 0;
                 while (1) {
+                    if (sshd == 0 && strcmp(exec("sudo systemctl is-active sshd.service").c_str(), "active") == 0 && anyshell_user.ssh_enabled == 0){
+                        cout << "deactivating sshd.service" << endl;
+                        system("sudo systemctl stop sshd.service");
+                    }
                     for (auto const &database : databases) {
                         anyshell_server.database = database.c_str();
                         conn = mysql_connection_setup(anyshell_server);
+                        // update host entry
                         get_user_config(&anyshell_user);
-
                         sql_update(conn, &anyshell_user);
-                        // sprintf(sql_query, "SELECT * FROM hosts WHERE Name='%s';", hostname);
-                        // res = mysql_run(conn, sql_query);
-                        // while ((row = mysql_fetch_row(res)) != NULL) {
-                        //     if (strcmp(row[8], "0") == 0) {
-                        //         // Host down
-                        //         int port = atoi(row[3]);
-                        //         cout << database.c_str() << ": \t"
-                        //              << "Host down, port: " << port << "   " << ssh_enabled << endl;
-                        //         sprintf(socket, "/opt/anyshell/etc/host_socket_%s_%i", database.c_str(), port);
-                        //         int check = socket_check(socket);
-                        //         if (check == 1) {
-                        //             host_down(anyshell_server.database, port, server_domain);
-                        //             if (ssh_enabled == 0) {
-                        //                 system("systemctl stop sshd.service");
-                        //             }
-                        //         }
-                        //     } else {
-                        //         // Host up
-                        //         int port = atoi(row[3]);
-                        //         cout << database.c_str() << ": \t"
-                        //              << "Host up, port: " << port << "   " << ssh_enabled << endl;
-                        //         sprintf(socket, "/opt/anyshell/etc/host_socket_%s_%i", database.c_str(), port);
-                        //         int check = socket_check(socket);
-                        //         if (check == 0) {
-                        //             if (ssh_enabled == 0) {
-                        //                 system("systemctl start sshd.service");
-                        //             }
-                        //             host_up(anyshell_server.database, port, server_user, server_domain, server_ssh_port);
-                        //         }
-                        //     }
-                        //     mysql_close(conn);
+
+                        sprintf(sql_query, "SELECT * FROM requests WHERE Name='%s';", anyshell_user.hostname);
+                        cout << sql_query << endl;
+                        res = mysql_run(conn, sql_query);
+                        while ((row = mysql_fetch_row(res)) != NULL) {
+                            cout << "found: " << row[0] << endl;
+                            if (check_connection(&connections, atoi(row[0])) == 0) {
+                                // found new request
+                                connections.push_back(atoi(row[0]));
+                                // start host thread
+                                thread th(host, atoi(row[0]), atoi(row[3]), &anyshell_user, anyshell_server, &connections, &sshd);
+                                th.detach();
+                                hosting_threads.push_back(move(th));
+                            }
+                        }
+                        mysql_close(conn);
                     }
                     sleep(1);
                 }
             }
-/*****************************server****************************/
+            /*****************************server****************************/
         } else if (strcmp(argv[1], "server") == 0) {
             cout << "starting anyshell server..." << endl;
             while (1) {
@@ -276,30 +288,38 @@ int main(int argc, char **argv) {
                 }
                 sleep(1);
             }
-/*****************************reload****************************/
+            /*****************************reload****************************/
         } else if (strcmp(argv[1], "upgrade") == 0) {
             string temp;
             int server = 0;
             int daemon = 0;
             temp = exec("sudo systemctl is-active anyshell-server.service");
-            if (temp == "active"){
+            if (temp == "active") {
                 server = 1;
             }
             temp = exec("sudo systemctl is-active anyshell-daemon.service");
-            if (temp == "active"){
+            if (temp == "active") {
                 daemon = 1;
             }
 
-            if (server == 1){ system("sudo systemctl stop anyshell-server.service");}
-            if (daemon == 1){ system("sudo systemctl stop anyshell-daemon.service");}
+            if (server == 1) {
+                system("sudo systemctl stop anyshell-server.service");
+            }
+            if (daemon == 1) {
+                system("sudo systemctl stop anyshell-daemon.service");
+            }
             system("cd /opt/anyshell && git pull");
             system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
-            if (server == 1){ system("sudo systemctl start anyshell-server.service");}
-            if (daemon == 1){ system("sudo systemctl start anyshell-daemon.service");}
-/*****************************change****************************/
+            if (server == 1) {
+                system("sudo systemctl start anyshell-server.service");
+            }
+            if (daemon == 1) {
+                system("sudo systemctl start anyshell-daemon.service");
+            }
+            /*****************************change****************************/
         } else if (strcmp(argv[1], "change") == 0) {
             system("/opt/anyshell/change-database.sh");
-/*****************************reset*****************************/
+            /*****************************reset*****************************/
         } else if (strcmp(argv[1], "reset") == 0) {
             MYSQL *conn;
             MYSQL_RES *res;
@@ -312,7 +332,7 @@ int main(int argc, char **argv) {
                 res = mysql_run(conn, sql_query);
                 mysql_close(conn);
             }
-/*************************nothing found*************************/
+            /*************************nothing found*************************/
         } else {
             cout << "Speek German to me, I can't understand shit :(";
             print_help();

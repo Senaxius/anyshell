@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <thread>
+#include <vector>
+#include <signal.h>
 
 #include "../lib/mysql/mysql.h"
 
@@ -35,6 +37,11 @@ struct host_details {
 
 /****************************Functions****************************/
 std::string exec(const char *cmd);
+void setting_ctrl_c();
+void ctrl_c_handler(int s);
+void remove_from_list(list<int> *list, int a);
+int check_connection(list<int> *list, int a);
+
 void get_server_config(const std::string &config_path, server_details *server);
 void get_user_config(user_details *anyshell_user);
 void get_localIP(char *output);
@@ -55,13 +62,17 @@ void print_help();
 
 void sql_update(MYSQL *conn, user_details *user_details);
 void request(MYSQL *conn, int Host_ID, host_details *host_details);
-void request_update(MYSQL *conn, host_details *host_details);
+void request_update(server_details server_details, host_details host_details);
 void unrequest(MYSQL *conn, host_details *host_details);
+
+void host(int ID, int port, user_details *user_details, server_details server_details, list<int> *connections, int *sshd);
+void connect(char *user, char *host, char *port);
 /****************************Variables****************************/
 static string str;
 static char sql_query[500], command[200], socket[100];
 
 static list<string> databases;
+static list<int> connections;
 
 static struct server_details anyshell_server {"0", "0", "0", "0", "0", "0"};
 static struct user_details anyshell_user {0, "0", "0", "0", "0", "0", 0};
@@ -70,7 +81,7 @@ static struct host_details anyshell_host {"0", "0", "0", "0", "0", "0", "0"};
 static MYSQL *conn;
 static MYSQL_RES *res;
 static MYSQL_ROW row;
-
+static char ssh_hostname[20];
 /*****************************Garbage*****************************/
 // conn = mysql_connection_setup(anyshell_server);
 // res = mysql_run(conn,
@@ -105,3 +116,8 @@ static MYSQL_ROW row;
     // cout << anyshell_user.localIP << endl;
     // cout << anyshell_user.publicIP << endl;
     // cout << anyshell_user.ssh_enabled << endl;
+
+// for (auto i = myList.begin(); i!=myList.end(); i++){
+//     cout << *i << " ";
+// }
+// remove_from_list(&connections, 1);

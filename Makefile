@@ -3,6 +3,7 @@ FLAGS = -g
 FLAGS += -Wl,--no-as-needed
 FLAGS += -lmariadb
 FLAGS += -std=c++0x -pthread
+FLAGS += -fsanitize=address
 MAKEFLAGS += --silent
 
 SOURCEDIR = src
