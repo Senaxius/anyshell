@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
             }
 /*****************************change****************************/
         } else if (strcmp(argv[1], "change") == 0) {
-            system("/opt/anyshell/change-database.sh");
+            system("/opt/anyshell/etc/change-database.sh");
 /*************************nothing found*************************/
         } else {
             cout << "Speek German to me, I can't understand shit :(";
