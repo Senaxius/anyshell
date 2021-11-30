@@ -210,16 +210,22 @@ int main(int argc, char **argv) {
             } else if (strcmp(argv[2], "daemon") == 0) {
                 vector<thread> hosting_threads;
                 int sshd = 0;
+                int found = 0;
                 while (1) {
-                    if (sshd == 0 && strcmp(exec("sudo systemctl is-active sshd.service").c_str(), "active") == 0 && anyshell_user.ssh_enabled == 0) {
+                    found = 0;
+                    if (sshd == 0 && strcmp(exec("systemctl is-active sshd.service").c_str(), "active") == 0 && anyshell_user.ssh_enabled == 0) {
                         cout << "deactivating sshd.service" << endl;
-                        system("sudo systemctl stop sshd.service");
+                        system("systemctl stop sshd.service");
                     }
                     for (auto const &database : databases) {
                         anyshell_server.database = database.c_str();
                         conn = mysql_connection_setup(anyshell_server);
                         // update host entry
-                        get_user_config(&anyshell_user);
+                        get_user(anyshell_user.user);
+                        get_hostname(anyshell_user.hostname);
+                        get_localIP(anyshell_user.localIP);
+                        get_publicIP(anyshell_user.publicIP);
+
                         sql_update(conn, &anyshell_user);
 
                         sprintf(sql_query, "SELECT * FROM requests WHERE Name='%s';", anyshell_user.hostname);
@@ -233,7 +239,11 @@ int main(int argc, char **argv) {
                                 // thread th(host, atoi(row[0]), atoi(row[3]), &anyshell_user, anyshell_server);
                                 th.detach();
                                 hosting_threads.push_back(move(th));
+                                found = 1;
                             }
+                        }
+                        if (found == 0) {
+                            cout << "no request for database: " << database << endl;
                         }
                         mysql_free_result(res);
                         mysql_close(conn);
