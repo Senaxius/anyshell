@@ -278,6 +278,7 @@ int main(int argc, char **argv) {
             string temp;
             int server = 0;
             int daemon = 0;
+            cout << "Checking which services are active..." << endl;
             temp = exec("sudo systemctl is-active anyshell-server.service");
             if (temp == "active") {
                 server = 1;
@@ -286,20 +287,33 @@ int main(int argc, char **argv) {
             if (temp == "active") {
                 daemon = 1;
             }
+            cout << "----------------------done----------------------" << endl;
 
             if (server == 1) {
+                cout << "deactivate anyshell-server" << endl;
                 system("sudo systemctl stop anyshell-server.service");
+                cout << "----------------------done----------------------" << endl;
             }
             if (daemon == 1) {
+                cout << "deactivate anyshell-daemon" << endl;
                 system("sudo systemctl stop anyshell-daemon.service");
+                cout << "----------------------done----------------------" << endl;
             }
+            cout << "updating repository..." << endl;
             system("cd /opt/anyshell && git pull");
+            cout << "----------------------done----------------------" << endl;
+            cout << "compiling raw anyshell code..." << endl;
             system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
+            cout << "----------------------done----------------------" << endl;
             if (server == 1) {
+                cout << "starting anyshell-server" << endl;
                 system("sudo systemctl start anyshell-server.service");
+                cout << "----------------------done----------------------" << endl;
             }
             if (daemon == 1) {
+                cout << "starting anyshell-daemon" << endl;
                 system("sudo systemctl start anyshell-daemon.service");
+                cout << "----------------------done----------------------" << endl;
             }
 /*****************************change****************************/
         } else if (strcmp(argv[1], "change") == 0) {
