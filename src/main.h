@@ -71,7 +71,7 @@ void host(int ID, int port, user_details *user_details, server_details server_de
 void connect(char *user, char *host, char *port);
 /****************************Variables****************************/
 static string str;
-static char sql_query[500], command[200], socket[100];
+static char sql_query[500], command[200];
 
 static list<string> databases;
 static list<int> connections;

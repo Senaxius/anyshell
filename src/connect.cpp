@@ -96,8 +96,11 @@ void host(int ID, int port, user_details *user_details, server_details server_de
 
     int server_port;
     char temp[6];
+    char socket[100];
     get_ID(conn, "connections", temp);
     server_port = (41999 + atoi(temp));
+
+    sprintf(command, "pkill -f %i", server_port);
 
     sprintf(socket, "/opt/anyshell/etc/host_socket_%i", ID);
     sprintf(command, "ssh -f -N -T -M -S %s -R %i:localhost:%i %s@%s -p %s -i ~/.ssh/anyshell-key ", socket, server_port, port, server_details.user, server_details.domain, server_details.SSH_port);
