@@ -92,6 +92,7 @@ int main(int argc, char **argv) {
                 }
             }
 
+
             if (strcmp(anyshell_user.publicIP, anyshell_host.publicIP) == 0 && force_server == 0 && ssh_connect == 1) {
                 // connect locally
                 cout << "requested host is on same network, connecting localy..." << endl;
@@ -100,23 +101,28 @@ int main(int argc, char **argv) {
                 // connect remotely
                 cout << "connecting to host via sever..." << endl;
                 // kill old unused sessions
-                sprintf(command, "lsof -t -i:%s >/dev/null && lsof -ti:%s | xargs kill -9", anyshell_host.server_port, anyshell_host.server_port);
-                system(command);
-                sprintf(command, "rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_host.server_port);
-                system(command);
+                sprintf(command, "if [ -S /opt/anyshell/etc/guest_socket_%s ]; then echo 1; else echo 0; fi", anyshell_user.port);
+                if (exec(command) == "1") {
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit %s", anyshell_user.port, anyshell_server.domain);
+                    system(command);
+                    sprintf(command, "rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_user.port);
+                    system(command);
+                }
+                // get user port 
+                sprintf(anyshell_user.port, "%i", (atoi(anyshell_host.server_port) - 1000));
                 // tunnel to server
-                sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket_%s %s@%s -p %s -i ~/.ssh/anyshell-key -L %s:localhost:%s", anyshell_host.server_port, anyshell_server.user, anyshell_server.domain, anyshell_server.SSH_port, anyshell_host.server_port, anyshell_host.server_port);
+                sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket_%s %s@%s -p %s -i ~/.ssh/anyshell-key -L %s:localhost:%s", anyshell_user.port, anyshell_server.user, anyshell_server.domain, anyshell_server.SSH_port, anyshell_user.port, anyshell_host.server_port);
                 system(command);
                 if (ssh_connect == 1) {
                     // connect to tunnel
                     strcpy(ssh_hostname, "localhost");
-                    connect(anyshell_host.user, ssh_hostname, anyshell_host.server_port);
+                    connect(anyshell_host.user, ssh_hostname, anyshell_user.port);
 
                     // kill tunnel after connection
-                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit localhost >/dev/null || rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_host.server_port, anyshell_host.server_port);
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit localhost || rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_user.port, anyshell_user.port);
                     system(command);
                 } else {
-                    sprintf(command, "ssh %s@localhost -p %s", anyshell_host.user, anyshell_host.server_port);
+                    sprintf(command, "ssh %s@localhost -p %s", anyshell_host.user, anyshell_user.port);
                     cout << "\nTo connect, run: \n"
                          << "----------------------------------------------------\n"
                          << command << "\n----------------------------------------------------" << endl;
@@ -124,7 +130,7 @@ int main(int argc, char **argv) {
                     cin.ignore();
                     cin.ignore();
 
-                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit localhost >/dev/null || rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_host.server_port, anyshell_host.server_port);
+                    sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit localhost || rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_user.port, anyshell_user.port);
                     system(command);
                 }
             }

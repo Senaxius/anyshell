@@ -28,7 +28,7 @@ struct server_details {
 };
 struct user_details {
     int ssh_enabled;
-    char user[20], hostname[20], port[20], localIP[20], publicIP[20];
+    char user[20], hostname[20], port[6], localIP[20], publicIP[20];
     int ID;
 };
 struct host_details {

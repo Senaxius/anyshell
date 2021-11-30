@@ -128,7 +128,7 @@ void host(int ID, int port, user_details *user_details, server_details server_de
             // closeing ssh connection
             sprintf(command, "ssh -S %s -O exit %s &>/dev/null", socket, server_details.domain);
             system(command);
-            sprintf(command, "rm -f %s", socket);
+            sprintf(command, "pkill -f %i", port);
             system(command);
 
             // remove the ID from connections list
