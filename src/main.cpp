@@ -249,7 +249,7 @@ int main(int argc, char **argv) {
                     res = mysql_run(conn, sql_query);
 
                     // delete old requests
-                    sprintf(sql_query, "SELECT FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
+                    sprintf(sql_query, "SELECT * FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
                     while ((row = mysql_fetch_row(res)) != NULL) {
                         cout << "Found unused connection with ID: " << row[0] << ", killing it..." << endl;
