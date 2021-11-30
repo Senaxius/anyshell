@@ -3,6 +3,7 @@
 for (( i = 0; i <= 10 ; i++ )); do
     {
         # echo "ssh $1@$2 -p $3 -o StrictHostKeyChecking=no && break"
+        ssh-keygen -f "/home/len/.ssh/known_hosts" -R "[localhost]:$3" &>/dev/null
         ssh $1@$2 -p $3 -o StrictHostKeyChecking=no && break
         
     } || { 
