@@ -315,6 +315,7 @@ int main(int argc, char **argv) {
             cout << "compiling raw anyshell code..." << endl;
             system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
             cout << "----------------------done----------------------" << endl;
+            system("sudo systemctl daemon-reload");
             if (server == 1) {
                 cout << "starting anyshell-server" << endl;
                 system("sudo systemctl start anyshell-server.service");
