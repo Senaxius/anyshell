@@ -1,5 +1,6 @@
 senaex
 noftp.ddns.net
-192.168.178.21
-41999
+Quande-0918
 senaex
+41998
+41999
