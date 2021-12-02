@@ -110,19 +110,21 @@ void print_hosts(MYSQL *conn, int verbose) {
 
 void print_help() {
     system("cat /opt/anyshell/etc/asci.txt");
-    cout << "\nWelcome to anyshell :) \n" << endl;
+    cout << "\nWelcome to anyshell :)" << endl;
+    cout << "\nCurrent Version: V.2.1\n" << endl;
     cout << "Commands:" << endl;
     cout << "   list" << endl;
     cout << "       -v" << endl;
     cout << "   connect" << endl;
+    cout << "       -v" << endl;
+    cout << "       -s" << endl;
     cout << "   host" << endl;
     cout << "       setup" << endl;
     cout << "       remove" << endl;
     cout << "       daemon" << endl;
     cout << "   server" << endl;
-    cout << "   reload" << endl;
+    cout << "   upgrade" << endl;
     cout << "   change" << endl;
-    cout << "   reset" << endl;
 }
 
 void get_ID(MYSQL *conn, const char *table, char *ID) {
