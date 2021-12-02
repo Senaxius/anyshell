@@ -1,13 +1,11 @@
 [Unit]
 Description=Anyshell deamon
 After=network.target
-StartLimitBurst=5
-StartLimitIntervalSec=10
 
 [Service]
 Type=simple
 Restart=always
-RestartSec=1
+RestartSec=5
 User=root
 ExecStart=/usr/bin/anyshell host daemon
 
