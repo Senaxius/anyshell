@@ -1,4 +1,4 @@
-#include "main.h"
+w#include "main.h"
 
 int main(int argc, char **argv) {
     setting_ctrl_c();
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 
             if (strcmp(anyshell_user.publicIP, anyshell_host.publicIP) == 0 && force_server == 0 && ssh_connect == 1) {
                 // connect locally
-                cout << "requested host is on same network, connecting localy..." << endl;
+                cout << "requested host is on same network, connecting locally..." << endl;
                 connect(anyshell_host.user, anyshell_host.localIP, anyshell_host.host_port);
             } else {
                 // connect remotely
@@ -331,7 +331,7 @@ int main(int argc, char **argv) {
             system("/opt/anyshell/etc/change-database.sh");
 /*************************nothing found*************************/
         } else {
-            cout << "Speek German to me, I can't understand shit :(";
+            cout << "Speak German to me, I can't understand shit :(";
             print_help();
         }
     }
