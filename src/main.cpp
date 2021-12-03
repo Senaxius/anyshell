@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
                 connect(anyshell_host.user, anyshell_host.localIP, anyshell_host.host_port);
             } else {
                 // connect remotely
-                cout << "connecting to host via sever..." << endl;
+                cout << "connecting to host via server..." << endl;
                 // kill old unused sessions
                 sprintf(command, "if [ -S /opt/anyshell/etc/guest_socket_%s ]; then echo 1; else echo 0; fi", anyshell_user.port);
                 if (exec(command) == "1") {
