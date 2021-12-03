@@ -107,12 +107,19 @@ void host(int ID, int port, user_details *user_details, server_details server_de
     system(command);
 
     sprintf(sql_query,
-            "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`) "
-            "VALUES ('%i', '%s', '%i', '%i');",
-            ID, user_details->hostname, port, server_port);
+        "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`, `last-used`) " 
+        "VALUES ('%i', '%s', '%i', '%i', CURRENT_TIMESTAMP);", 
+        ID, user_details->hostname, port, server_port);
     res = mysql_run(conn, sql_query);
-    mysql_free_result(res);
     while (1){
+        // keep connection online
+        sprintf(sql_query,
+                "UPDATE connections "
+                "SET "
+                "`last-used`=CURRENT_TIMESTAMP "
+                "WHERE ID=%i;",
+                ID);
+        res = mysql_run(conn, sql_query);
         // check if host is still in requests table
         sprintf(sql_query,
                 "SELECT * FROM requests WHERE ID='%i';",

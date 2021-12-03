@@ -268,13 +268,23 @@ int main(int argc, char **argv) {
                     sprintf(sql_query, "SELECT * FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
                     while ((row = mysql_fetch_row(res)) != NULL) {
-                        cout << "Found unused connection with ID: " << row[0] << ", killing it..." << endl;
+                        cout << "Found unused request with ID: " << row[0] << ", killing it..." << endl;
                         MYSQL *conn2;
                         MYSQL_RES *res2;
                         MYSQL_ROW row2;
                         conn2 = mysql_connection_setup(anyshell_server);
                         sprintf(sql_query, "DELETE FROM requests WHERE `ID`=%s;", row[0]);
                         res2 = mysql_run(conn2, sql_query);
+                        mysql_close(conn2);
+                    }
+                    sprintf(sql_query, "SELECT * FROM connections WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
+                    res = mysql_run(conn, sql_query);
+                    while ((row = mysql_fetch_row(res)) != NULL) {
+                        cout << "Found unused connection with ID: " << row[0] << ", killing it..." << endl;
+                        MYSQL *conn2;
+                        MYSQL_RES *res2;
+                        MYSQL_ROW row2;
+                        conn2 = mysql_connection_setup(anyshell_server);
                         sprintf(sql_query, "DELETE FROM connections WHERE `ID`=%s;", row[0]);
                         res2 = mysql_run(conn2, sql_query);
                         mysql_close(conn2);
