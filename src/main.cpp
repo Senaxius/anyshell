@@ -295,6 +295,13 @@ int main(int argc, char **argv) {
             }
 /*****************************upgrade****************************/
         } else if (strcmp(argv[1], "upgrade") == 0) {
+            for (int i = 2; i < argc; i++) {
+                if (strcmp(argv[i], "-s") == 0) {
+                    cout << "running upgrade in background" << endl;
+                    exec("sudo nohup anyshell upgrade >/dev/null");
+                    exit(0);
+                }
+            }
             string temp;
             int server = 0;
             cout << "Checking which services are active..." << endl;
