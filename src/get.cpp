@@ -65,7 +65,8 @@ void get_hostname(char *hostname) {
 }
 void get_localIP(char *output) {
     string temp;
-    temp = exec(R"(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')");
+    // temp = exec(R"(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')");
+    temp = exec(R"(ip -o -4  address show  | awk ' NR==2 { gsub(/\/.*/, "", $4); print $4 } ')");
     temp.erase(remove_if(temp.begin(), temp.end(), ::isspace), temp.end());
     strcpy(output, temp.c_str());
 }
