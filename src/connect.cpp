@@ -3,6 +3,13 @@
 MYSQL *mysql_connection_setup(struct server_details mysql_details) {
     MYSQL *connection = mysql_init(NULL);
 
+    unsigned int mysql_ct = 5;
+
+    // set timeout to 5 seconds
+    mysql_options(connection, MYSQL_OPT_CONNECT_TIMEOUT, &mysql_ct);
+    mysql_options(connection, MYSQL_OPT_READ_TIMEOUT, &mysql_ct);
+    mysql_options(connection, MYSQL_OPT_WRITE_TIMEOUT, &mysql_ct);
+
     // connect database
     if (!mysql_real_connect(connection, mysql_details.domain,
                             mysql_details.user, mysql_details.password,
