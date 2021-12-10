@@ -3,6 +3,13 @@
 MYSQL *mysql_connection_setup(struct server_details mysql_details) {
     MYSQL *connection = mysql_init(NULL);
 
+    unsigned int mysql_ct = 5;
+
+    // set timeout to 5 seconds
+    mysql_options(connection, MYSQL_OPT_CONNECT_TIMEOUT, &mysql_ct);
+    mysql_options(connection, MYSQL_OPT_READ_TIMEOUT, &mysql_ct);
+    mysql_options(connection, MYSQL_OPT_WRITE_TIMEOUT, &mysql_ct);
+
     // connect database
     if (!mysql_real_connect(connection, mysql_details.domain,
                             mysql_details.user, mysql_details.password,
@@ -107,12 +114,19 @@ void host(int ID, int port, user_details *user_details, server_details server_de
     system(command);
 
     sprintf(sql_query,
-            "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`) "
-            "VALUES ('%i', '%s', '%i', '%i');",
-            ID, user_details->hostname, port, server_port);
+        "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`, `last-used`) " 
+        "VALUES ('%i', '%s', '%i', '%i', CURRENT_TIMESTAMP);", 
+        ID, user_details->hostname, port, server_port);
     res = mysql_run(conn, sql_query);
-    mysql_free_result(res);
     while (1){
+        // keep connection online
+        sprintf(sql_query,
+                "UPDATE connections "
+                "SET "
+                "`last-used`=CURRENT_TIMESTAMP "
+                "WHERE ID=%i;",
+                ID);
+        res = mysql_run(conn, sql_query);
         // check if host is still in requests table
         sprintf(sql_query,
                 "SELECT * FROM requests WHERE ID='%i';",

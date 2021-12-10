@@ -95,11 +95,11 @@ int main(int argc, char **argv) {
 
             if (strcmp(anyshell_user.publicIP, anyshell_host.publicIP) == 0 && force_server == 0 && ssh_connect == 1) {
                 // connect locally
-                cout << "requested host is on same network, connecting localy..." << endl;
+                cout << "requested host is on same network, connecting locally..." << endl;
                 connect(anyshell_host.user, anyshell_host.localIP, anyshell_host.host_port);
             } else {
                 // connect remotely
-                cout << "connecting to host via sever..." << endl;
+                cout << "connecting to host via server..." << endl;
                 // kill old unused sessions
                 sprintf(command, "if [ -S /opt/anyshell/etc/guest_socket_%s ]; then echo 1; else echo 0; fi", anyshell_user.port);
                 if (exec(command) == "1") {
@@ -268,13 +268,23 @@ int main(int argc, char **argv) {
                     sprintf(sql_query, "SELECT * FROM requests WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
                     res = mysql_run(conn, sql_query);
                     while ((row = mysql_fetch_row(res)) != NULL) {
-                        cout << "Found unused connection with ID: " << row[0] << ", killing it..." << endl;
+                        cout << "Found unused request with ID: " << row[0] << ", killing it..." << endl;
                         MYSQL *conn2;
                         MYSQL_RES *res2;
                         MYSQL_ROW row2;
                         conn2 = mysql_connection_setup(anyshell_server);
                         sprintf(sql_query, "DELETE FROM requests WHERE `ID`=%s;", row[0]);
                         res2 = mysql_run(conn2, sql_query);
+                        mysql_close(conn2);
+                    }
+                    sprintf(sql_query, "SELECT * FROM connections WHERE `last-used` <  (NOW() - INTERVAL 10 SECOND);");
+                    res = mysql_run(conn, sql_query);
+                    while ((row = mysql_fetch_row(res)) != NULL) {
+                        cout << "Found unused connection with ID: " << row[0] << ", killing it..." << endl;
+                        MYSQL *conn2;
+                        MYSQL_RES *res2;
+                        MYSQL_ROW row2;
+                        conn2 = mysql_connection_setup(anyshell_server);
                         sprintf(sql_query, "DELETE FROM connections WHERE `ID`=%s;", row[0]);
                         res2 = mysql_run(conn2, sql_query);
                         mysql_close(conn2);
@@ -283,19 +293,21 @@ int main(int argc, char **argv) {
                 }
                 sleep(1);
             }
-/*****************************reload****************************/
+/*****************************upgrade****************************/
         } else if (strcmp(argv[1], "upgrade") == 0) {
+            for (int i = 2; i < argc; i++) {
+                if (strcmp(argv[i], "-s") == 0) {
+                    cout << "running upgrade in background" << endl;
+                    exec("sudo nohup anyshell upgrade >/dev/null");
+                    exit(0);
+                }
+            }
             string temp;
             int server = 0;
-            int daemon = 0;
             cout << "Checking which services are active..." << endl;
             temp = exec("sudo systemctl is-active anyshell-server.service");
             if (temp == "active") {
                 server = 1;
-            }
-            temp = exec("sudo systemctl is-active anyshell-daemon.service");
-            if (temp == "active") {
-                daemon = 1;
             }
             cout << "----------------------done----------------------" << endl;
 
@@ -304,34 +316,32 @@ int main(int argc, char **argv) {
                 system("sudo systemctl stop anyshell-server.service");
                 cout << "----------------------done----------------------" << endl;
             }
-            if (daemon == 1) {
-                cout << "deactivate anyshell-daemon" << endl;
-                system("sudo systemctl stop anyshell-daemon.service");
-                cout << "----------------------done----------------------" << endl;
-            }
+            cout << "deactivate anyshell-daemon" << endl;
+            system("sudo systemctl stop anyshell-daemon.service");
+            cout << "----------------------done----------------------" << endl;
+
             cout << "updating repository..." << endl;
             system("cd /opt/anyshell && git pull");
             cout << "----------------------done----------------------" << endl;
             cout << "compiling raw anyshell code..." << endl;
             system("make -C /opt/anyshell clean && make -C /opt/anyshell -j8");
             cout << "----------------------done----------------------" << endl;
+
             system("sudo systemctl daemon-reload");
             if (server == 1) {
                 cout << "starting anyshell-server" << endl;
                 system("sudo systemctl start anyshell-server.service");
                 cout << "----------------------done----------------------" << endl;
             }
-            if (daemon == 1) {
-                cout << "starting anyshell-daemon" << endl;
-                system("sudo systemctl start anyshell-daemon.service");
-                cout << "----------------------done----------------------" << endl;
-            }
+            cout << "starting anyshell-daemon" << endl;
+            system("sudo systemctl start anyshell-daemon.service");
+            cout << "----------------------done----------------------" << endl;
 /*****************************change****************************/
         } else if (strcmp(argv[1], "change") == 0) {
             system("/opt/anyshell/etc/change-database.sh");
 /*************************nothing found*************************/
         } else {
-            cout << "Speek German to me, I can't understand shit :(";
+            cout << "Speak German to me, I can't understand shit :(";
             print_help();
         }
     }

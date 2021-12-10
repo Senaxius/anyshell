@@ -65,7 +65,8 @@ void get_hostname(char *hostname) {
 }
 void get_localIP(char *output) {
     string temp;
-    temp = exec(R"(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')");
+    // temp = exec(R"(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')");
+    temp = exec(R"(ip -o -4  address show  | awk ' NR==2 { gsub(/\/.*/, "", $4); print $4 } ')");
     temp.erase(remove_if(temp.begin(), temp.end(), ::isspace), temp.end());
     strcpy(output, temp.c_str());
 }
@@ -110,19 +111,21 @@ void print_hosts(MYSQL *conn, int verbose) {
 
 void print_help() {
     system("cat /opt/anyshell/etc/asci.txt");
-    cout << "\nWelcome to anyshell :) \n" << endl;
+    cout << "\nWelcome to anyshell :)" << endl;
+    cout << "\nCurrent Version: V.2.1\n" << endl;
     cout << "Commands:" << endl;
     cout << "   list" << endl;
     cout << "       -v" << endl;
     cout << "   connect" << endl;
+    cout << "       -v" << endl;
+    cout << "       -s" << endl;
     cout << "   host" << endl;
     cout << "       setup" << endl;
     cout << "       remove" << endl;
     cout << "       daemon" << endl;
     cout << "   server" << endl;
-    cout << "   reload" << endl;
+    cout << "   upgrade" << endl;
     cout << "   change" << endl;
-    cout << "   reset" << endl;
 }
 
 void get_ID(MYSQL *conn, const char *table, char *ID) {
