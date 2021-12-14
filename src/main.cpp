@@ -29,6 +29,8 @@ int main(int argc, char **argv) {
             int ssh_connect = 1;
             int force_server = 0;
             int list_all = 0;
+            int direct_connect = 0;
+            int input;
             for (int i = 2; i < argc; i++) {
                 if (strcmp(argv[i], "-n") == 0) {
                     ssh_connect = 0;
@@ -39,14 +41,20 @@ int main(int argc, char **argv) {
                 if (strcmp(argv[i], "-v") == 0) {
                     list_all = 1;
                 }
+                if (isNumber(argv[i])) {
+                    direct_connect = 1;
+                    input = atoi(argv[i]);
+                }
             }
             conn = mysql_connection_setup(anyshell_server);
-            // list hosts
-            print_hosts(conn, list_all);
-            // get host ID to connect to
-            cout << "\nWhich Host do you want to connect to? ";
-            int input;
-            cin >> input;
+
+            if (direct_connect == 0){
+                // list hosts
+                print_hosts(conn, list_all);
+                // get host ID to connect to
+                cout << "\nWhich Host do you want to connect to? ";
+                cin >> input;
+            }
             // requesting host and getting host data
             request(conn, input, &anyshell_host);
             // keep request online

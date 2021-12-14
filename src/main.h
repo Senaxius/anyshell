@@ -39,6 +39,7 @@ struct host_details {
 std::string exec(const char *cmd);
 void setting_ctrl_c();
 void ctrl_c_handler(int s);
+bool isNumber(char number[]);
 
 void remove_from_list(list<int> *list, int a);
 int check_connection(list<int> *list, int a);

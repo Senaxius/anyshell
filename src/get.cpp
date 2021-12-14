@@ -14,6 +14,17 @@ std::string exec(const char *cmd) {
     return result;
 }
 
+bool isNumber(char number[]) {
+    int i = 0;
+    if (number[0] == '-')
+        i = 1;
+    for (; number[i] != 0; i++) {
+        if (!isdigit(number[i]))
+            return false;
+    }
+    return true;
+}
+
 void get_databases(list<string> &databases) {
     ifstream data("/opt/anyshell/etc/databases.txt");
     while (data.is_open()) {
@@ -112,7 +123,8 @@ void print_hosts(MYSQL *conn, int verbose) {
 void print_help() {
     system("cat /opt/anyshell/etc/asci.txt");
     cout << "\nWelcome to anyshell :)" << endl;
-    cout << "\nCurrent Version: V.2.1\n" << endl;
+    cout << "\nCurrent Version: V.2.1\n"
+         << endl;
     cout << "Commands:" << endl;
     cout << "   list" << endl;
     cout << "       -v" << endl;
@@ -142,7 +154,7 @@ void get_ID(MYSQL *conn, const char *table, char *ID) {
     }
 }
 
-void remove_from_list(list<int> *list, int a){
+void remove_from_list(list<int> *list, int a) {
     for (int i = 0; i < list->size(); i++) {
         auto it = list->begin();
         std::advance(it, i);
@@ -153,7 +165,7 @@ void remove_from_list(list<int> *list, int a){
     }
 }
 
-int check_connection(list<int> *list, int a){
+int check_connection(list<int> *list, int a) {
     int b = 0;
     for (int i = 0; i < list->size(); i++) {
         auto it = list->begin();
@@ -173,7 +185,7 @@ void ctrl_c_handler(int s) {
     exit(0);
 }
 
-void setting_ctrl_c(){
+void setting_ctrl_c() {
     // setting up ctrl_c action
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = ctrl_c_handler;
