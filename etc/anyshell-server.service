@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=10
-User=senaex
+User=root
 ExecStart=anyshell server
 
 [Install]

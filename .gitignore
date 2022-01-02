@@ -3,4 +3,5 @@
 **/*.log
 **/anyshell
 !*/.backup/anyshell
+**/config.txt
 
