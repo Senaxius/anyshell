@@ -1,6 +1,0 @@
-server
-noftp.ddns.net
-anyisok-41999
-senaex
-41998
-41999
