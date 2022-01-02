@@ -67,6 +67,9 @@ sudo rm ~/.ssh/anyshell-key*
 sudo rm /root/.ssh/anyshell-key
 sudo rm /root/.ssh/anyshell-key.pub
 
+sed -i '/noftp.ddns.net/d' $HOME/.ssh/known_hosts &>/dev/null
+sudo sed -i '/noftp.ddns.net/d' /root/.ssh/known_hosts &>/dev/null
+
 echo -e "\ncreating user-key...\n"
 ssh-keygen -f "$HOME/.ssh/anyshell-key" -P "" 
 echo -e "\nSending to server...\n"
