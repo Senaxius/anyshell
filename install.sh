@@ -68,17 +68,21 @@ sudo rm /root/.ssh/anyshell-key
 sudo rm /root/.ssh/anyshell-key.pub
 
 sed -i '/noftp.ddns.net/d' $HOME/.ssh/known_hosts &>/dev/null
+sed -i '/41999/d' $HOME/.ssh/known_hosts &>/dev/null
 sudo sed -i '/noftp.ddns.net/d' /root/.ssh/known_hosts &>/dev/null
+sudo sed -i '/41999/d' /root/.ssh/known_hosts &>/dev/null
 
 echo -e "\ncreating user-key...\n"
 ssh-keygen -f "$HOME/.ssh/anyshell-key" -P "" 
 echo -e "\nSending to server...\n"
-sshpass -p "$sql_password" ssh-copy-id -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
+# sshpass -p "$sql_password" ssh-copy-id -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
+ssh-copy-id -f -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
 
 echo -e "\ncreating root-key...\n"
 sudo ssh-keygen -f "/root/.ssh/anyshell-key" -P "" 
 echo -e "\nSending to server...\n"
-sudo sshpass -p "$sql_password" ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
+#sudo sshpass -p "$sql_password" ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
+sudo ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
 # if [ ! -f ~/.ssh/anyshell-key ]; then
 #     echo -e "\nNo key found, creating ssh-key\n"
 #     ssh-keygen -f "$HOME/.ssh/anyshell-key-new" -P "" 
