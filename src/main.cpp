@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
     if (argc == 1) {
         print_help();
     } else {
-/*****************************list******************************/
-    if (strcmp(argv[1], "list") == 0) {
+        /*****************************list******************************/
+        if (strcmp(argv[1], "list") == 0) {
             conn = mysql_connection_setup(anyshell_server);
             if (argc > 2) {
                 if (strcmp(argv[2], "-v") == 0) {
@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
                 print_hosts(conn, 0);
             }
             mysql_close(conn);
-/****************************connect****************************/
-    } else if (strcmp(argv[1], "connect") == 0) {
+            /****************************connect****************************/
+        } else if (strcmp(argv[1], "connect") == 0) {
             // check for flags
             int ssh_connect = 1;
             int force_server = 0;
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
             }
             conn = mysql_connection_setup(anyshell_server);
 
-            if (direct_connect == 0){
+            if (direct_connect == 0) {
                 // list hosts
                 print_hosts(conn, list_all);
                 // get host ID to connect to
@@ -100,7 +100,6 @@ int main(int argc, char **argv) {
                 }
             }
 
-
             if (strcmp(anyshell_user.publicIP, anyshell_host.publicIP) == 0 && force_server == 0 && ssh_connect == 1) {
                 // connect locally
                 cout << "requested host is on same network, connecting locally..." << endl;
@@ -116,7 +115,7 @@ int main(int argc, char **argv) {
                     sprintf(command, "rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_user.port);
                     system(command);
                 }
-                // get user port 
+                // get user port
                 sprintf(anyshell_user.port, "%i", (atoi(anyshell_host.server_port) - 1000));
                 // tunnel to server
                 sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket_%s %s@%s -p %s -i ~/.ssh/anyshell-key -L %s:localhost:%s", anyshell_user.port, anyshell_server.user, anyshell_server.domain, anyshell_server.SSH_port, anyshell_user.port, anyshell_host.server_port);
@@ -146,8 +145,8 @@ int main(int argc, char **argv) {
             mysql_close(conn);
 
         } else if (strcmp(argv[1], "host") == 0) {
-/***************************host-setup**************************/
-        if (strcmp(argv[2], "setup") == 0) {
+            /***************************host-setup**************************/
+            if (strcmp(argv[2], "setup") == 0) {
                 char port[5];
                 cout << "Which Port do you want to share? ";
                 cin >> port;
@@ -193,7 +192,7 @@ int main(int argc, char **argv) {
                 }
                 mysql_free_result(res);
                 mysql_close(conn);
-/**************************host-remove**************************/
+                /**************************host-remove**************************/
             } else if (strcmp(argv[2], "remove") == 0) {
                 conn = mysql_connection_setup(anyshell_server);
                 cout << "Which Port do you want to remove? ";
@@ -214,7 +213,7 @@ int main(int argc, char **argv) {
                 mysql_free_result(res);
                 mysql_close(conn);
                 cout << "done!" << endl;
-/**************************host-daemon**************************/
+                /**************************host-daemon**************************/
             } else if (strcmp(argv[2], "daemon") == 0) {
                 vector<thread> hosting_threads;
                 int sshd = 0;
@@ -259,7 +258,7 @@ int main(int argc, char **argv) {
                     sleep(1);
                 }
             }
-/*****************************server****************************/
+            /*****************************server****************************/
         } else if (strcmp(argv[1], "server") == 0) {
             cout << "starting anyshell server..." << endl;
             while (1) {
@@ -301,7 +300,7 @@ int main(int argc, char **argv) {
                 }
                 sleep(1);
             }
-/*****************************upgrade****************************/
+            /*****************************upgrade****************************/
         } else if (strcmp(argv[1], "upgrade") == 0) {
             for (int i = 2; i < argc; i++) {
                 if (strcmp(argv[i], "-s") == 0) {
@@ -344,10 +343,88 @@ int main(int argc, char **argv) {
             cout << "starting anyshell-daemon" << endl;
             system("sudo systemctl start anyshell-daemon.service");
             cout << "----------------------done----------------------" << endl;
-/*****************************change****************************/
+            /*****************************change****************************/
         } else if (strcmp(argv[1], "change") == 0) {
             system("/opt/anyshell/etc/change-database.sh");
-/*************************nothing found*************************/
+            /*****************************anykey****************************/
+        } else if (strcmp(argv[1], "key") == 0) {
+            int input;
+            conn = mysql_connection_setup(anyshell_server);
+
+            cout << anyshell_server.user << endl;
+            cout << anyshell_server.domain << endl;
+            cout << anyshell_server.database << endl;
+
+            print_hosts(conn, 1);
+            // get host ID to connect to
+            cout << "\nWhich Host do you want to connect to? ";
+            cin >> input;
+            // requesting host and getting host data
+            request(conn, input, &anyshell_host);
+            // keep request online
+            thread updater(request_update, anyshell_server, anyshell_host);
+            updater.detach();
+
+            // waiting for host to accept request
+            cout << "scanning if host is up: " << flush;
+            time_t start = time(nullptr);
+            time_t now;
+            int i = 0;
+            int b = 0;
+            while (true) {
+                i++;
+                if (i == 50) {
+                    i = 0;
+                    cout << "." << flush;
+                }
+                now = time(nullptr);
+
+                // check if host is up
+                sprintf(sql_query, "SELECT * FROM connections WHERE ID='%s';", anyshell_host.ID);
+                res = mysql_run(conn, sql_query);
+                while ((row = mysql_fetch_row(res)) != NULL) {
+                    // host is up
+                    strcpy(anyshell_host.server_port, row[3]);
+                    cout << "found!\n"
+                         << endl;
+                    b = 1;
+                    break;
+                }
+                mysql_free_result(res);
+
+                // if host is found, break
+                if (b == 1) {
+                    break;
+                }
+                // if host is not found, break after 5 seconds
+                if (now - start > 4) {
+                    cout << "\nCould not connect to Host!" << endl;
+                    unrequest(conn, &anyshell_host);
+                    exit(0);
+                }
+            }
+            cout << "connecting to host via server..." << endl;
+            // kill old unused sessions
+            sprintf(command, "if [ -S /opt/anyshell/etc/guest_socket_%s ]; then echo 1; else echo 0; fi", anyshell_user.port);
+            if (exec(command) == "1") {
+                sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit %s", anyshell_user.port, anyshell_server.domain);
+                system(command);
+                sprintf(command, "rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_user.port);
+                system(command);
+            }
+            // get user port
+            sprintf(anyshell_user.port, "%i", (atoi(anyshell_host.server_port) - 1000));
+            // tunnel to server
+            sprintf(command, "ssh -f -N -T -M -S /opt/anyshell/etc/guest_socket_%s %s@%s -p %s -i ~/.ssh/anyshell-key -L %s:localhost:%s", anyshell_user.port, anyshell_server.user, anyshell_server.domain, anyshell_server.SSH_port, anyshell_user.port, anyshell_host.server_port);
+            system(command);
+
+            sprintf(command, "ssh-copy-id -p %s %s@localhost", anyshell_user.port, anyshell_host.user);
+            system(command);
+
+            sprintf(command, "ssh -S /opt/anyshell/etc/guest_socket_%s -O exit localhost || rm -f /opt/anyshell/etc/guest_socket_%s", anyshell_user.port, anyshell_user.port);
+            system(command);
+            unrequest(conn, &anyshell_host);
+            /*************************nothing found*************************/
         } else {
             cout << "Speak German to me, I can't understand shit :(";
             print_help();
