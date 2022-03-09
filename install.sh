@@ -11,31 +11,36 @@ echo -e "\nEntering configuration tool..."
 echo -e "!!!  Text in [Brackets] is default, press enter to accept it.  !!!"
 echo -e "\n"
 
-read -p "Server User [server]: " User
-if [ -z $User ]; then
-    User="server"
-fi
-read -p "Server domain [noftp.ddns.net]: " domain
-if [ -z $domain ]; then
-    domain="noftp.ddns.net"
-fi
-read -p "Server SQL-port [41998]: " sql_port
-if [ -z $sql_port ]; then
-    sql_port="41998"
-fi
+User="anyshell"
+domain="noftp.ddns.net"
+sql_port="41998"
+ssh_port="41999"
+database="senaex"
+# read -p "Server User [server]: " User
+# if [ -z $User ]; then
+#     User="server"
+# fi
+# read -p "Server domain [noftp.ddns.net]: " domain
+# if [ -z $domain ]; then
+#     domain="noftp.ddns.net"
+# fi
+# read -p "Server SQL-port [41998]: " sql_port
+# if [ -z $sql_port ]; then
+#     sql_port="41998"
+# fi
 read -p "Server SQL-password: " sql_password
 if [ -z $sql_password ]; then
     echo "no password specified, try again..."
     read -p "Server SQL-password: " sql_password
 fi
-read -p "Server SSH-port [41999]: " ssh_port
-if [ -z $ssh_port ]; then
-    ssh_port="41999"
-fi
-read -p "SQL-Database [senaex]: " database
-if [ -z $database ]; then
-    database="senaex"
-fi
+# read -p "Server SSH-port [41999]: " ssh_port
+# if [ -z $ssh_port ]; then
+#     ssh_port="41999"
+# fi
+# read -p "SQL-Database [senaex]: " database
+# if [ -z $database ]; then
+#     database="senaex"
+# fi
 
 echo "$User" > ./etc/config.txt
 echo "$domain" >> ./etc/config.txt
