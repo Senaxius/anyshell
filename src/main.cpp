@@ -350,11 +350,6 @@ int main(int argc, char **argv) {
         } else if (strcmp(argv[1], "key") == 0) {
             int input;
             conn = mysql_connection_setup(anyshell_server);
-
-            cout << anyshell_server.user << endl;
-            cout << anyshell_server.domain << endl;
-            cout << anyshell_server.database << endl;
-
             print_hosts(conn, 1);
             // get host ID to connect to
             cout << "\nWhich Host do you want to connect to? ";
