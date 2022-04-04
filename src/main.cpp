@@ -169,10 +169,8 @@ int main(int argc, char **argv) {
                 get_ID(conn, "hosts", ID);
                 sprintf(sql_query,
                         "INSERT INTO hosts (`ID`, `Name`, `User`, `Port`, "
-                        "`publicIP`, `localIP`, `online`, `last-online`, "
-                        "`requested`) "
-                        "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '1', "
-                        "CURRENT_TIMESTAMP, '0');",
+                        "`publicIP`, `localIP`, `online`) "
+                        "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '1');",
                         ID, anyshell_user.hostname, anyshell_user.user, port, anyshell_user.publicIP, anyshell_user.localIP);
 
                 mysql_free_result(res);
@@ -235,14 +233,14 @@ int main(int argc, char **argv) {
 
                         sql_update(conn, &anyshell_user);
 
-                        sprintf(sql_query, "SELECT * FROM requests WHERE Name='%s';", anyshell_user.hostname);
+                        sprintf(sql_query, "SELECT requests.ID, hosts.ID, hosts.Port FROM requests, hosts WHERE requests.`Host-ID`=hosts.ID AND hosts.Name='%s';", anyshell_user.hostname);
                         res = mysql_run(conn, sql_query);
                         while ((row = mysql_fetch_row(res)) != NULL) {
                             if (check_connection(&connections, atoi(row[0])) == 0) {
                                 // found new request
                                 connections.push_back(atoi(row[0]));
                                 // start host thread
-                                thread th(host, atoi(row[0]), atoi(row[3]), &anyshell_user, anyshell_server, &connections, &sshd);
+                                thread th(host, atoi(row[0]), atoi(row[1]), atoi(row[2]), &anyshell_user, anyshell_server, &connections, &sshd);
                                 // thread th(host, atoi(row[0]), atoi(row[3]), &anyshell_user, anyshell_server);
                                 th.detach();
                                 hosting_threads.push_back(move(th));

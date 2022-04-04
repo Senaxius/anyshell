@@ -32,15 +32,17 @@ MYSQL_RES *mysql_run(MYSQL *connection, const char *sql_query) {
 }
 
 void sql_update(MYSQL *conn, user_details *user_details) {
+    string version = exec("git -C /opt/anyshell rev-list --count master");
     sprintf(sql_query,
             "UPDATE hosts "
             "SET "
             "`last-online`=CURRENT_TIMESTAMP, "
             "`online`='1', "
             "`localIP`='%s', "
-            "`publicIP`='%s' "
+            "`publicIP`='%s', "
+            "`version`='%i' "
             "WHERE Name='%s';",
-            user_details->localIP, user_details->publicIP, user_details->hostname);
+            user_details->localIP, user_details->publicIP, atoi(version.c_str()), user_details->hostname);
     res = mysql_run(conn, sql_query);
     mysql_free_result(res);
 }
@@ -61,9 +63,9 @@ void request(MYSQL *conn, int host_ID, host_details *host_details){
     get_ID(conn, "requests", host_details->ID);
     // request host in requests table
     sprintf(sql_query,
-            "INSERT INTO requests (`ID`, `Name`, `User`, `Port`, `last-used`) " 
-            "VALUES ('%s', '%s', '%s', '%s', CURRENT_TIMESTAMP);", 
-            host_details->ID, host_details->hostname, host_details->user, host_details->host_port);
+            "INSERT INTO requests (`ID`, `Host-ID`) " 
+            "VALUES ('%s', '%s');", 
+            host_details->ID);
     res = mysql_run(conn, sql_query);
 }
 void request_update(server_details server_details, host_details host_details){
@@ -89,7 +91,7 @@ void unrequest(MYSQL *conn, host_details *host_details){
     res = mysql_run(conn, sql_query);
 }
 
-void host(int ID, int port, user_details *user_details, server_details server_details, list<int> *connections, int *sshd){
+void host(int ID, int Host_ID, int port, user_details *user_details, server_details server_details, list<int> *connections, int *sshd){
 // void host(int ID, int port, user_details *user_details, server_details server_details){
     conn = mysql_connection_setup(server_details);
     cout << "Hosting Port: " << port << " on ID: " << ID << endl;
@@ -114,9 +116,9 @@ void host(int ID, int port, user_details *user_details, server_details server_de
     system(command);
 
     sprintf(sql_query,
-        "INSERT INTO connections (`ID`, `Name`, `Host-Port`, `Server-Port`, `last-used`) " 
-        "VALUES ('%i', '%s', '%i', '%i', CURRENT_TIMESTAMP);", 
-        ID, user_details->hostname, port, server_port);
+        "INSERT INTO connections (`ID`, `Host-ID`, `Server-Port`) " 
+        "VALUES ('%i', '%i', '%i');", 
+        ID, Host_ID, server_port);
     res = mysql_run(conn, sql_query);
     while (1){
         // keep connection online

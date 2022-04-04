@@ -11,36 +11,36 @@ echo -e "\nEntering configuration tool..."
 echo -e "!!!  Text in [Brackets] is default, press enter to accept it.  !!!"
 echo -e "\n"
 
-User="anyshell"
-domain="noftp.ddns.net"
-sql_port="41998"
-ssh_port="41999"
-database="senaex"
-# read -p "Server User [server]: " User
-# if [ -z $User ]; then
-#     User="server"
-# fi
-# read -p "Server domain [noftp.ddns.net]: " domain
-# if [ -z $domain ]; then
-#     domain="noftp.ddns.net"
-# fi
-# read -p "Server SQL-port [41998]: " sql_port
-# if [ -z $sql_port ]; then
-#     sql_port="41998"
-# fi
+# User="anyshell"
+# domain="noftp.ddns.net"
+# sql_port="41998"
+# ssh_port="41999"
+# database="senaex"
+read -p "Server User [anyshell]: " User
+if [ -z $User ]; then
+    User="anyshell"
+fi
+read -p "Server domain [noanus.com]: " domain
+if [ -z $domain ]; then
+    domain="noanus.com"
+fi
+read -p "Server SQL-port [41998]: " sql_port
+if [ -z $sql_port ]; then
+    sql_port="41998"
+fi
+read -p "Server SSH-port [41999]: " ssh_port
+if [ -z $ssh_port ]; then
+    ssh_port="41999"
+fi
+read -p "SQL-Database [senaex]: " database
+if [ -z $database ]; then
+    database="senaex"
+fi
 read -p "Server SQL-password: " sql_password
 if [ -z $sql_password ]; then
     echo "no password specified, try again..."
     read -p "Server SQL-password: " sql_password
 fi
-# read -p "Server SSH-port [41999]: " ssh_port
-# if [ -z $ssh_port ]; then
-#     ssh_port="41999"
-# fi
-# read -p "SQL-Database [senaex]: " database
-# if [ -z $database ]; then
-#     database="senaex"
-# fi
 
 echo "$User" > ./etc/config.txt
 echo "$domain" >> ./etc/config.txt
@@ -78,31 +78,13 @@ sudo rm ~/.ssh/known_hosts
 echo -e "\ncreating user-key...\n"
 ssh-keygen -f "$HOME/.ssh/anyshell-key" -P "" 
 echo -e "\nSending to server...\n"
-# sshpass -p "$sql_password" ssh-copy-id -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
-ssh-copy-id -f -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
+sshpass -p "$sql_password" ssh-copy-id -o "StrictHostKeyChecking accept-new" -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
+# ssh-copy-id -f -i ~/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
 
 echo -e "\ncreating root-key...\n"
 sudo ssh-keygen -f "/root/.ssh/anyshell-key" -P "" 
 echo -e "\nSending to server...\n"
-#sudo sshpass -p "$sql_password" ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
-sudo ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
-# if [ ! -f ~/.ssh/anyshell-key ]; then
-#     echo -e "\nNo key found, creating ssh-key\n"
-#     ssh-keygen -f "$HOME/.ssh/anyshell-key-new" -P "" 
-#     echo -e "\nSending to server...\n"
-#     ssh-copy-id -i ~/.ssh/anyshell-key-new.pub -p 41999 $Server_user@$Server_dns 
-# else
-#     echo -e "SSH-Key found, skipping process..."
-# fi
-# 
-# if sudo test -f "/root/.ssh/anyshell-key"; then
-#     echo -e "Root SSH-Key found, skipping process..."
-# else
-#     echo -e "\nNo root key found, creating ssh-key\n"
-#     sudo ssh-keygen -f "/root/.ssh/anyshell-key" -P "" 
-#     echo -e "\nSending to server...\n"
-#     sudo ssh-copy-id -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns
-# fi
+sudo sshpass -p "$sql_password" ssh-copy-id -o "StrictHostKeyChecking accept-new" -i /root/.ssh/anyshell-key.pub -p 41999 $Server_user@$Server_dns 
 echo "---------------------------done!------------------------------"
 
 echo "compiling the raw anyshell c++ code"
