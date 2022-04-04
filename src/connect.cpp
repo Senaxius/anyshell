@@ -61,11 +61,12 @@ void request(MYSQL *conn, int host_ID, host_details *host_details){
     mysql_free_result(res);
     // get unique request ID
     get_ID(conn, "requests", host_details->ID);
+
     // request host in requests table
     sprintf(sql_query,
             "INSERT INTO requests (`ID`, `Host-ID`) " 
-            "VALUES ('%s', '%s');", 
-            host_details->ID);
+            "VALUES ('%s', '%i');", 
+            host_details->ID, host_ID);
     res = mysql_run(conn, sql_query);
 }
 void request_update(server_details server_details, host_details host_details){

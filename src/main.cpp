@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
             int b = 0;
             while (true) {
                 i++;
-                if (i == 50) {
+                if (i == 40) {
                     i = 0;
                     cout << "." << flush;
                 }
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
                 res = mysql_run(conn, sql_query);
                 while ((row = mysql_fetch_row(res)) != NULL) {
                     // host is up
-                    strcpy(anyshell_host.server_port, row[3]);
+                    strcpy(anyshell_host.server_port, row[2]);
                     cout << "found!\n"
                          << endl;
                     b = 1;
@@ -92,8 +92,8 @@ int main(int argc, char **argv) {
                 if (b == 1) {
                     break;
                 }
-                // if host is not found, break after 5 seconds
-                if (now - start > 4) {
+                // if host is not found, break after 6 seconds
+                if (now - start > 6) {
                     cout << "\nCould not connect to Host!" << endl;
                     unrequest(conn, &anyshell_host);
                     exit(0);
