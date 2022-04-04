@@ -384,7 +384,7 @@ int main(int argc, char **argv) {
                 res = mysql_run(conn, sql_query);
                 while ((row = mysql_fetch_row(res)) != NULL) {
                     // host is up
-                    strcpy(anyshell_host.server_port, row[3]);
+                    strcpy(anyshell_host.server_port, row[2]);
                     cout << "found!\n"
                          << endl;
                     b = 1;
