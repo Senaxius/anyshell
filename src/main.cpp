@@ -19,6 +19,9 @@ int main(int argc, char **argv) {
                 if (strcmp(argv[2], "-v") == 0) {
                     print_hosts(conn, 1);
                 }
+                if (strcmp(argv[2], "-vv") == 0) {
+                    print_hosts(conn, 2);
+                }
             } else {
                 print_hosts(conn, 0);
             }
@@ -40,6 +43,9 @@ int main(int argc, char **argv) {
                 }
                 if (strcmp(argv[i], "-v") == 0) {
                     list_all = 1;
+                }
+                if (strcmp(argv[i], "-vv") == 0) {
+                    list_all = 2;
                 }
                 if (isNumber(argv[i])) {
                     direct_connect = 1;
@@ -167,11 +173,12 @@ int main(int argc, char **argv) {
                 }
                 char ID[3];
                 get_ID(conn, "hosts", ID);
+                string version = exec("git -C /opt/anyshell rev-list --count master");
                 sprintf(sql_query,
                         "INSERT INTO hosts (`ID`, `Name`, `User`, `Port`, "
-                        "`publicIP`, `localIP`, `online`) "
-                        "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '1');",
-                        ID, anyshell_user.hostname, anyshell_user.user, port, anyshell_user.publicIP, anyshell_user.localIP);
+                        "`publicIP`, `localIP`, `online`, `version`) "
+                        "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '1', '%i');",
+                        ID, anyshell_user.hostname, anyshell_user.user, port, anyshell_user.publicIP, anyshell_user.localIP, atoi(version.c_str()));
 
                 mysql_free_result(res);
 

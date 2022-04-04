@@ -97,7 +97,17 @@ int check_ssh_setup() {
 }
 
 void print_hosts(MYSQL *conn, int verbose) {
-    if (verbose == 1) {
+    if (verbose == 2) {
+        res = mysql_run(conn, "SELECT * FROM hosts ORDER BY `ID` ASC;");
+        printf("%-3s | %-14s | %-8s | %-5s | %-15s | %-15s | %-19s | %-6s | %s \n",
+               "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "last-online", "online", "version");
+        while ((row = mysql_fetch_row(res)) != NULL) {
+            string time = row[7];
+            printf("%-3s | %-14s | %-8s | %-5s | %-15s | %-15s | %-19s | %-6s | %s \n",
+                   row[0], row[1], row[2], row[3], row[4], row[5], time.c_str(), row[6], row[8]);
+        }
+        mysql_free_result(res);
+    } else if (verbose == 1) {
         res = mysql_run(conn, "SELECT * FROM hosts ORDER BY `ID` ASC;");
         printf("%-3s | %-14s | %-8s | %-5s | %-15s | %-15s | %-19s | %s \n",
                "ID", "Hostname", "User", "Port", "public-IP", "local-IP", "last-online", "online");
