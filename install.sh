@@ -63,6 +63,8 @@ sudo ln -s $DIR/anyshell /usr/bin 2>/dev/null
 sudo ln -s $DIR/etc/anyshell-daemon.service /etc/systemd/system/ 2>/dev/null
 sudo ln -s $DIR/etc/anyshell-server.service /etc/systemd/system/ 2>/dev/null
 
+sudo git config --global --add safe.directory /opt/anyshell
+
 ##############ssh-key#################
 Server_user=$(sed -n 1p ./etc/config.txt)
 Server_dns=$(sed -n 2p ./etc/config.txt)
